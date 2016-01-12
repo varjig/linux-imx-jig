@@ -126,7 +126,7 @@
 		mux-int-port = <2>;
 		mux-ext-port = <3>;
 	};
-	sound-hdmi {
+	sound_hdmi: sound-hdmi {
 		compatible = "fsl,imx6q-audio-hdmi",
 			     "fsl,imx-audio-hdmi";
 		model = "imx-audio-hdmi";
@@ -974,8 +974,9 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 	wlcore: wlcore@0 {
-		compatible = "ti,wl1835";
+		compatible = "ti,wl1835", "ti,wl1271";
 		reg = <2>;
+		ref-clock-frequency = <38400000>;
 #if 0
 		gpio = <177>;   /* The wl8 driver expects gpio to be an integer, so gpio6_17 is (6-1)*32+17=207
 		        	   irq property must not be set as driver derives irq number from gpio if no irq set
@@ -989,7 +990,6 @@
 		/* if a 12xx card is there, configure the clock to WL12XX_REFCLOCK_38_XTAL */
 		board-ref-clock = <4>;
 	};
-
 };
 
 

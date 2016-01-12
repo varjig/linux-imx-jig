@@ -1,0 +1,301 @@
+/*
+ * Copyright (C) 2014 Variscite, Ltd. All Rights Reserved
+ * Donio Ron: ron.d@variscite.com
+ * 
+ * Copyright (C) 2013 Freescale Semiconductor, Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+/dts-v1/;
+
+#define VAR_SOM_MX6
+
+#include "imx6dl.dtsi"
+#include "imx6qdl-var-som.dtsi"
+
+/ {
+	model = "Variscite i.MX6 DL/Solo VAR-SOM-MX6";
+	compatible = "fsl,imx6q-var-som", "fsl,imx6q";
+};
+
+&i2c2 {
+	pmic: pfuze100@08 {
+		compatible = "fsl,pfuze100";
+		reg = <0x08>;
+
+		regulators {
+			sw1a_reg: sw1ab {
+				regulator-min-microvolt = <300000>;
+				regulator-max-microvolt = <1875000>;
+				regulator-boot-on;
+				regulator-always-on;
+				regulator-ramp-delay = <6250>;
+			};
+
+			sw1c_reg: sw1c {
+				regulator-min-microvolt = <300000>;
+				regulator-max-microvolt = <1875000>;
+				regulator-boot-on;
+				regulator-always-on;
+				regulator-ramp-delay = <6250>;
+			};
+
+			sw2_reg: sw2 {
+				regulator-min-microvolt = <800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			sw3a_reg: sw3a {
+				regulator-min-microvolt = <800000>;
+				regulator-max-microvolt = <3950000>;
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			sw3b_reg: sw3b {
+				regulator-min-microvolt = <800000>;
+				regulator-max-microvolt = <3950000>;
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			sw4_reg: sw4 {
+				regulator-min-microvolt = <800000>;
+				regulator-max-microvolt = <3950000>;
+			};
+
+			snvs_reg: vsnvs {
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <3000000>;
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			vref_reg: vrefddr {
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			vgen1_reg: vgen1 {
+				regulator-min-microvolt = <800000>;
+				regulator-max-microvolt = <1550000>;
+			};
+
+			vgen2_reg: vgen2 {
+				regulator-min-microvolt = <800000>;
+				regulator-max-microvolt = <1550000>;
+			};
+
+			vgen3_reg: vgen3 {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+				regulator-boot-on;
+			};
+
+			vgen4_reg: vgen4 {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+				regulator-boot-on;
+			};
+
+			vgen5_reg: vgen5 {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+				regulator-boot-on;
+			};
+
+			vgen6_reg: vgen6 {
+				regulator-min-microvolt = <2800000>;
+				regulator-max-microvolt = <2800000>;
+				regulator-always-on;
+				regulator-boot-on;
+			};
+		};
+	};
+};
+
+&ldb {
+	lvds-channel@0 {
+		crtc = "ipu1-di0";
+	};
+
+	lvds-channel@1 {
+		crtc = "ipu1-di1";
+	};
+};
+
+&mxcfb1 {
+	status = "okay";
+};
+
+&mxcfb2 {
+	status = "okay";
+};
+
+&pxp {
+    status = "okay";
+};
+
+
+#if 0
+//Disabled by default
+&gpio_keys {
+	status = "disabled";
+};
+#endif
+
+&mxcfb3 {
+	status = "okay";
+};
+
+&mxcfb4 {
+	status = "okay";
+};
+
+/*
+&sata {
+	status = "okay";
+};
+*/
+
+&sound_hdmi {
+	status = "disabled";
+};
+
+&hdmi_audio {
+	status = "disabled";
+};
+
+&hdmi_core  {
+	status = "disabled";
+};
+
+&hdmi_video {
+	status = "disabled";
+};
+
+
+&hdmi {
+	status = "disabled";
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+&i2c3 {
+	status = "disabled";
+};
+
+&uart3 {
+	status = "disabled";
+};
+
+&flexcan1 {
+	status = "disabled";
+};
+
+&usdhc1 {	/* uSDHC2, MMC/SD card */
+	pinctrl-names = "default";
+	//pinctrl-0 = <&pinctrl_usdhc2_3>;
+	pinctrl-0 = <&pinctrl_usdhc2_2>;
+	cd-gpios = <>;
+	wp-gpios = <>;
+	non-removable;
+	no-1-8-v;
+	keep-power-in-suspend;
+	enable-sdio-wakeup;
+	status = "okay";
+};
+
+&pcie {
+	reset-gpio    = <>;		/* gpio pin number of power good signal */
+	wake-up-gpio  = <>;		/* gpio pin number of incoming wakeup signal */
+ 	disable-gpio  = <>;		/* gpio pin number of outgoing rfkill/endpoint disable signal */
+	status = "okay";
+};
+
+&pwm2 {
+	status = "disabled";
+};
+
+&iomuxc {
+	uart2 {
+		pinctrl_uart1_JIG: pinctrl_uart1_JIG-3 {
+			fsl,pins = <
+				MX6QDL_PAD_CSI0_DAT10__UART1_TX_DATA 0x1b0b1
+				MX6QDL_PAD_CSI0_DAT11__UART1_RX_DATA 0x1b0b1
+		
+				/* JIG GPIOs */			
+				//MX6QDL_PAD_SD1_DAT0__GPIO1_IO16	0x80000000
+				//MX6QDL_PAD_SD1_DAT1__GPIO1_IO17	0x80000000
+				//MX6QDL_PAD_SD1_CMD__GPIO1_IO18	0x80000000
+				//MX6QDL_PAD_SD1_DAT2__GPIO1_IO19	0x80000000
+				//MX6QDL_PAD_SD1_DAT3__GPIO1_IO21	0x80000000
+				MX6QDL_PAD_ENET_RX_ER__GPIO1_IO24	0x80000000
+				//MX6QDL_PAD_GPIO_5__GPIO1_IO05		0x80000000 - i2c3
+				MX6QDL_PAD_GPIO_7__GPIO1_IO07		0x80000000
+				MX6QDL_PAD_GPIO_8__GPIO1_IO08		0x80000000
+				MX6QDL_PAD_EIM_EB2__GPIO2_IO30	0x80000000
+				//MX6QDL_PAD_EIM_EB3__GPIO2_IO31	0x80000000
+				MX6QDL_PAD_EIM_DA13__GPIO3_IO13	0x80000000
+				MX6QDL_PAD_EIM_D19__GPIO3_IO19	0x80000000
+				MX6QDL_PAD_EIM_D20__GPIO3_IO20	0x80000000
+				MX6QDL_PAD_EIM_D21__GPIO3_IO21	0x80000000
+				MX6QDL_PAD_EIM_D22__GPIO3_IO22	0x80000000
+				MX6QDL_PAD_EIM_D23__GPIO3_IO23	0x80000000 //- uart3_2
+				MX6QDL_PAD_EIM_D24__GPIO3_IO24	0x80000000 //- uart3_2
+				MX6QDL_PAD_EIM_D25__GPIO3_IO25	0x80000000 //- pinctrl_uart3_2
+				MX6QDL_PAD_EIM_D27__GPIO3_IO27	0x80000000
+				//MX6QDL_PAD_EIM_D28__GPIO3_IO28	0x80000000 pinctrl_uart2_3 
+				//MX6QDL_PAD_EIM_D29__GPIO3_IO29	0x80000000 //- uart1
+				MX6QDL_PAD_EIM_DA7__GPIO3_IO07		0x80000000
+				MX6QDL_PAD_KEY_COL2__GPIO4_IO10		0x80000000
+				MX6QDL_PAD_KEY_COL4__GPIO4_IO14		0x80000000
+				MX6QDL_PAD_KEY_ROW4__GPIO4_IO15		0x80000000
+				MX6QDL_PAD_DISP0_DAT9__GPIO4_IO30 0x80000000
+				MX6QDL_PAD_KEY_COL0__GPIO4_IO06		0x80000000
+				MX6QDL_PAD_KEY_ROW0__GPIO4_IO07		0x80000000
+				MX6QDL_PAD_KEY_COL1__GPIO4_IO08		0x80000000
+				MX6QDL_PAD_KEY_ROW1__GPIO4_IO09		0x80000000
+								
+				//MX6QDL_PAD_DISP0_DAT13__GPIO5_IO07	0x80000000 // GPIO105
+				
+				MX6QDL_PAD_DISP0_DAT18__GPIO5_IO12	0x80000000
+				MX6QDL_PAD_DISP0_DAT19__GPIO5_IO13	0x80000000
+				MX6QDL_PAD_DISP0_DAT20__GPIO5_IO14	0x80000000
+				MX6QDL_PAD_DISP0_DAT21__GPIO5_IO15	0x80000000
+				MX6QDL_PAD_DISP0_DAT22__GPIO5_IO16	0x80000000
+				MX6QDL_PAD_DISP0_DAT23__GPIO5_IO17	0x80000000
+				MX6QDL_PAD_CSI0_MCLK__GPIO5_IO19	0x80000000
+				MX6QDL_PAD_CSI0_VSYNC__GPIO5_IO21	0x80000000
+				MX6QDL_PAD_CSI0_DAT12__GPIO5_IO30	0x80000000
+				MX6QDL_PAD_CSI0_DAT13__GPIO5_IO31	0x80000000
+				MX6QDL_PAD_CSI0_DAT14__GPIO6_IO00	0x80000000
+				MX6QDL_PAD_CSI0_DAT15__GPIO6_IO01	0x80000000
+				MX6QDL_PAD_CSI0_DAT16__GPIO6_IO02	0x80000000
+				MX6QDL_PAD_CSI0_DAT17__GPIO6_IO03	0x80000000
+				MX6QDL_PAD_CSI0_DAT18__GPIO6_IO04	0x80000000
+				MX6QDL_PAD_GPIO_16__GPIO7_IO11		0x80000000 //- i2c3
+				MX6QDL_PAD_CSI0_DAT19__GPIO6_IO05	0x80000000
+				MX6QDL_PAD_CSI0_DATA_EN__GPIO5_IO20 0x80000000		
+			>;
+		};
+	};
+};
+
+/* Console Uart */
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1_JIG>;
+	status = "okay";
+};
+

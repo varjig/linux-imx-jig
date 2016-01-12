@@ -189,6 +189,9 @@ dtb-$(CONFIG_ARCH_MXC) += \
 	imx6dl-var-som-solo.dtb \
 	imx6dl-var-som-solo-vsc.dtb \
 	imx6q-var-som-vsc.dtb\
+	imx6q-var-som-jig.dtb \
+	imx6dl-var-som-jig.dtb \
+	imx6dl-var-som-solo-jig.dtb \
 	imx6q-sbc6x.dtb \
 	imx6q-udoo.dtb \
 	imx6q-wandboard.dtb \
