@@ -185,6 +185,7 @@ dtb-$(CONFIG_ARCH_MXC) += \
 	imx6q-sabresd-ldo.dtb \
 	imx6q-var-som.dtb \
 	imx6q-var-dart.dtb \
+	imx6q-var-dart-jig.dtb \
 	imx6dl-var-som.dtb \
 	imx6dl-var-som-solo.dtb \
 	imx6dl-var-som-solo-vsc.dtb \
