@@ -18,7 +18,7 @@
 #define VAR_DART_MX6
 
 #include "imx6q.dtsi"
-#include "imx6qdl-var-dart.dtsi"
+#include "imx6qdl-var-dart-jig.dtsi"
 
 / {
 	model = "Variscite i.MX6 QUAD VAR-DART Smart Device Board";
