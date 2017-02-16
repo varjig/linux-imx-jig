@@ -8,5 +8,8 @@
 /* WI-FI & eMMC devices enabled NAND & SDCARD disabled.*/
 #define WIFI
 #define EMMC
+#define AC
+#define PHY
 /* #define  NAND */
 #include "imx6ul-var-dart.dtsi"
+
