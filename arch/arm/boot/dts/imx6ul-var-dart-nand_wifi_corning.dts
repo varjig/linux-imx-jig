@@ -1,0 +1,72 @@
+/*
+ * Copyright (C) 2015 Variscite Ltd. - http://www.variscite.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+/* NAND & WI-FI devices enabled eMMC & SDCARD disabled.*/
+#define WIFI
+/* #define EMMC */
+#define  NAND
+
+#define AC
+#define PHY
+#include "imx6ul-var-dart.dtsi"
+
+&gpmi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpmi_nand_1>;
+	nand-on-flash-bbt;
+	status = "okay";
+
+	partition@0 {
+		label = "spl";
+		reg = <0x00000000 0x00200000>; // Offset: 0, Size = 2097152 bytes = 2MBytes
+	};
+
+	partition@1 {
+		label = "uboot";
+		reg = <0x00200000 0x00200000>; // Offset: 2MBytes, Size = 2097152 bytes = 2MBytes
+	};
+
+	partition@2 {
+		label = "uboot-env";
+		reg = <0x00400000 0x00200000>; // Offset: 4Mbytes, Size = 2097152 bytes = 2MBytes
+	};
+
+	partition@3 {
+		label = "reserved1";
+		reg = <0x00600000 0x00200000>; // Offset: 6Mbytes, Size = 2097152 bytes = 2MBytes
+	};
+
+	partition@4 {
+		label = "kernel";
+		reg = <0x00800000 0x00800000>; // Offset: 8Mbytes, Size = 8388608 bytes = 8MBytes
+	};
+
+	partition@5 {
+                label = "rootfs";
+                reg = <0x01000000 0x04000000>; // Offset: 16Mbytes, Size = 67108864 bytes = 64MBytes
+        };
+
+        partition@6 {
+                label = "kernel";
+                reg = <0x05000000 0x00800000>; // Offset: 80Mbytes, Size = 8388608   bytes = 8MBytes
+        };
+
+        partition@7 {
+                label = "rootfs";
+                reg = <0x05800000 0x04000000>; // Offset: 88Mbytes, Size = 67108864 bytes = 64MBytes
+        };
+
+        partition@8 {
+                label = "data";
+                reg = <0x09800000 0x04000000>; // Offset: 152Mbytes, Size = 67108864 bytes = 64MBytes
+        };
+
+        partition@9 {
+                label = "reserved2";
+	        reg = <0x0D800000 0x02800000>; // Offset: 216Mbytes, Size = 41943040 bytes = 40MBytes
+	};
+};
