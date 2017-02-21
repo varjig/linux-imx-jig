@@ -261,6 +261,7 @@
 	imx6ul-evk {
 		pinctrl_hog_1: hoggrp-1 {
 			fsl,pins = <
+				MX6UL_PAD_GPIO1_IO03__REF_CLK_32K	0x03029	/* WLAN Slow Clock */
 #ifdef PHY
 				MX6UL_PAD_GPIO1_IO07__ENET1_MDC		0x1b0b0
 				MX6UL_PAD_GPIO1_IO06__ENET1_MDIO	0x1b0b0
