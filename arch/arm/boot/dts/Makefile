@@ -387,6 +387,7 @@ dtb-$(CONFIG_SOC_IMX6UL) += \
 	imx6ul-9x9-evk-btwifi.dtb \
 	imx6ul-9x9-evk-csi.dtb \
 	imx6ul-9x9-evk-ldo.dtb \
+	imx6ul-var-dart-nand_wifi_corning.dtb \
 	imx6ul-var-dart-nand_wifi.dtb \
 	imx6ul-var-dart-emmc_wifi.dtb \
 	imx6ul-var-dart-sd_nand.dtb \
