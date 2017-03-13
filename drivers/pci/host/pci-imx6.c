@@ -344,7 +344,7 @@ static int imx6_pcie_assert_core_reset(struct pcie_port *pp)
 static void pci_imx_phy_pll_locked(struct imx6_pcie *imx6_pcie)
 {
 	u32 val;
-	int count = 50000;
+	int count = 20000;
 
 	while (count--) {
 		regmap_read(imx6_pcie->iomuxc_gpr, IOMUXC_GPR22, &val);
@@ -502,7 +502,7 @@ static void imx6_pcie_init_phy(struct pcie_port *pp)
 	if (is_imx7d_pcie(imx6_pcie)) {
 		/* Enable PCIe PHY 1P0D */
 		regulator_set_voltage(imx6_pcie->pcie_phy_regulator,
-				1030000, 1030000);
+				1000000, 1000000);
 		ret = regulator_enable(imx6_pcie->pcie_phy_regulator);
 		if (ret)
 			dev_err(pp->dev, "failed to enable pcie regulator.\n");
