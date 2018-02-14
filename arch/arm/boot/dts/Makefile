@@ -345,6 +345,7 @@ dtb-$(CONFIG_SOC_IMX6Q) += \
 	imx6q-var-som-jig.dtb \
 	imx6q-var-som-res.dtb \
 	imx6q-var-som-vsc.dtb \
+	imx6qp-var-som-jig.dtb \
 	imx6q-wandboard.dtb \
 	imx6q-wandboard-revb1.dtb
 dtb-$(CONFIG_SOC_IMX6SL) += \
