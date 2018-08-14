@@ -38,27 +38,11 @@
 		};
 
 #ifdef WIFI
-/* force VMMC1 to always on so BT can operate independently of Wi-Fi */
-		reg_1v8_wlan: regulator@1 {
-			compatible = "regulator-fixed";
-			regulator-name = "VWLAN_1V8";
-			regulator-min-microvolt = <1800000>;
-			regulator-max-microvolt = <1800000>;
-			gpio = <&gpio5 2 GPIO_ACTIVE_HIGH>;	/* WL_1V8_ON: SNVS_TAMPER2 (gpio5_2) */
-			enable-active-high;
-			regulator-always-on;
-			startup-delay-us = <50000>;
-			status = "disabled";			/* enabled by u-boot on DART-6UL-5G with Wi-Fi */
-		};
-
 		reg_sd1_vmmc: regulator@2 {
 			compatible = "regulator-fixed";
 			regulator-name = "VSD_3V3";
 			regulator-min-microvolt = <3300000>;
 			regulator-max-microvolt = <3300000>;
-			gpio = <&gpio5 6 GPIO_ACTIVE_HIGH>;	/* WL_REG_ON: SNVS_TAMPER6 (gpio5_6) */
-			enable-active-high;
-			regulator-always-on;
 		};
 #endif
 		reg_gpio_dvfs: regulator-gpio {
@@ -184,7 +168,9 @@
 };
 
 #ifdef WIFI
+#ifdef WIFI_5G
 /*  Wi-Fi/BT SD Card Slot Definition */
+
 &usdhc1 {
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc1>;
@@ -193,12 +179,33 @@
 	assigned-clocks = <&clks IMX6UL_CLK_USDHC1_SEL>, <&clks IMX6UL_CLK_USDHC1>;
 	assigned-clock-parents = <&clks IMX6UL_CLK_PLL2_PFD2>;
 	assigned-clock-rates = <0>, <132000000>;
-	no-1-8-v;			/* removed by u-boot on DART-6UL-5G with Wi-Fi */
+	fsl,tuning-step= <2>;
+	vmmc-supply = <&reg_sd1_vmmc>;
+	status = "okay";
+};
+#else
+&usdhc1 {
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+	pinctrl-0 = <&pinctrl_usdhc1>;
+	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
+	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
+	no-1-8-v;
+	keep-power-in-suspend;
+	vmmc-supply = <&reg_sd1_vmmc>;
+	non-removable;
+	status = "okay";
+};
+#endif /* WIFI_5G */
+#else
+&usdhc1 {
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+	pinctrl-0 = <&pinctrl_usdhc1>;
+	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
+	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
+	no-1-8-v;
 	keep-power-in-suspend;
 	enable-sdio-wakeup;
-	vmmc-supply = <&reg_sd1_vmmc>;
-	wifi-host;			/* add hook for SD card detect mechanism */
-	non-removable;
+	cd-gpios = <&gpio4 19 GPIO_ACTIVE_LOW>;
 	status = "okay";
 };
 #endif
