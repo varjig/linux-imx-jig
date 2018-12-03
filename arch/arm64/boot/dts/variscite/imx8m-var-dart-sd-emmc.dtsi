@@ -20,8 +20,7 @@
 			regulator-name = "VSD_3V3";
 			regulator-min-microvolt = <3300000>;
 			regulator-max-microvolt = <3300000>;
-			gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
-			enable-active-high;
+			regulator-always-on;
 		};
 
 		reg_eth_phy: eth_phy {
@@ -38,11 +37,11 @@
 /* SD card */
 &usdhc2 {
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_sd>, <&pinctrl_usdhc2_vsel>; 
-	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_sd>, <&pinctrl_usdhc2_vsel>;
-	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_sd>, <&pinctrl_usdhc2_vsel>;
+	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_vsel>; 
+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_vsel>;
+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_vsel>;
 	bus-width = <4>;
-	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+	non-removable;
 	vmmc-supply = <&reg_usdhc2_vmmc>;
 	status = "okay";
 };

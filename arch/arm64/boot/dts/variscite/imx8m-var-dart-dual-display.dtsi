@@ -49,15 +49,3 @@
 	status = "okay";
 };
 
-&backlight {
-	status = "okay";
-};
-
-&dsi_lvds_bridge {
-	status = "okay";
-};
-
-&ft5x06_ts {
-	status = "okay";
-};
-
