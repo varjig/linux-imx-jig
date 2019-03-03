@@ -2362,7 +2362,7 @@ static int imx6_pcie_probe(struct platform_device *pdev)
 		dev_info(dev, "PCIe EP: waiting for link up...\n");
 		/* link is indicated by the bit4 of DB_R1 register */
 		do {
-			usleep_range(10, 20);
+			msleep(50);
 			if (time_after(jiffies, timeout)) {
 				dev_info(dev, "PCIe EP: link down.\n");
 				return 0;
