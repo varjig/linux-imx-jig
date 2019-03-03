@@ -598,8 +598,6 @@
 		clocks = <&clk IMX8MQ_CLK_CLKO2_DIV>;
 		clock-names = "csi_mclk";
 		csi_id = <0>;
-		pwn-gpios = <&gpio4 8 GPIO_ACTIVE_HIGH>;
-		rst-gpios = <&gpio5 28 GPIO_ACTIVE_HIGH>;
 		mclk = <24000000>;
 		mclk_source = <0>;
 		port {
@@ -633,8 +631,6 @@
 		clocks = <&clk IMX8MQ_CLK_CLKO2_DIV>;
 		clock-names = "csi_mclk";
 		csi_id = <1>;
-		pwn-gpios = <&gpio4 9 GPIO_ACTIVE_HIGH>;
-		rst-gpios = <&gpio5 29 GPIO_ACTIVE_HIGH>;
 		mclk = <24000000>;
 		mclk_source = <0>;
 		port {
@@ -907,38 +903,7 @@
 };
 
 &ecspi1 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi1>;
-	cs-gpios = <&gpio5 9 0>;
-	fsl,spi-num-chipselects = <1>;
-	status = "okay";
-
-	/* Resistive touch controller */
-	ads7846@0 {
-		reg = <0>;
-		compatible = "ti,ads7846";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ads7846>;
-		interrupt-parent = <&gpio1>;
-		interrupts = <3 IRQ_TYPE_EDGE_FALLING>;
-		spi-max-frequency = <1500000>;
-		pendown-gpio = <&gpio1 3 GPIO_ACTIVE_LOW>;
-		ti,x-min = /bits/ 16 <125>;
-		ti,x-max = /bits/ 16 <4008>;
-		ti,y-min = /bits/ 16 <282>;
-		ti,y-max = /bits/ 16 <3864>;
-		ti,x-plate-ohms = /bits/ 16 <180>;
-		ti,pressure-max = /bits/ 16 <255>;
-		ti,debounce-max = /bits/ 16 <10>;
-		ti,debounce-tol = /bits/ 16 <3>;
-		ti,debounce-rep = /bits/ 16 <1>;
-		ti,settle-delay-usec = /bits/ 16 <150>;
-		ti,keep-vref-on;
-		wakeup-source;
-		status = "disabled";
-        };
+	status = "disabled";
 };
 
 
