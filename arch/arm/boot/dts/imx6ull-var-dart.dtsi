@@ -34,6 +34,10 @@
 	compatible = "fsl,imx6ull-var-dart", "fsl,imx6ull";
 };
 
+&flexcan1 {
+	status = "okay";
+};
+
 &iomuxc_snvs {
 	pinctrl-names = "default_snvs";
 	pinctrl-0 = <&pinctrl_hog_2>;
