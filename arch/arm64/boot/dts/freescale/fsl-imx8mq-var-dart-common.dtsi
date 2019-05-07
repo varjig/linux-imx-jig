@@ -118,6 +118,7 @@
 		compatible = "gpio-keys";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_gpio_keys>;
+		status = "disabled";
 
 		up {
 			label = "Up";
@@ -148,6 +149,7 @@
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_leds>;
+		status = "disabled";
 
 		emmc {
 			label = "eMMC";
@@ -164,8 +166,60 @@
 
 &iomuxc {
 	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
 
 	imx8m-var-dart {
+
+		pinctrl_hog: hoggrp {
+			fsl,pins = <
+				MX8MQ_IOMUXC_SAI1_RXD0_GPIO4_IO2		0x40000011
+				MX8MQ_IOMUXC_SAI1_RXD4_GPIO4_IO6		0x40000011
+				MX8MQ_IOMUXC_SAI1_TXD5_GPIO4_IO17		0x40000011
+				MX8MQ_IOMUXC_SAI1_TXD0_GPIO4_IO12		0x40000011
+				MX8MQ_IOMUXC_SAI1_TXD3_GPIO4_IO15		0x40000011
+				MX8MQ_IOMUXC_SAI1_RXD1_GPIO4_IO3		0x40000011
+				MX8MQ_IOMUXC_SAI1_TXD4_GPIO4_IO16		0x40000011
+				MX8MQ_IOMUXC_GPIO1_IO01_GPIO1_IO1		0x40000011
+				MX8MQ_IOMUXC_SAI1_RXFS_GPIO4_IO0		0x40000011
+				MX8MQ_IOMUXC_SD2_WP_GPIO2_IO20			0x40000011
+				MX8MQ_IOMUXC_SAI2_TXFS_GPIO4_IO24		0x40000011
+				MX8MQ_IOMUXC_SAI2_RXC_GPIO4_IO22		0x40000011
+				MX8MQ_IOMUXC_SAI2_MCLK_GPIO4_IO27		0x40000011
+				MX8MQ_IOMUXC_SAI2_TXC_GPIO4_IO25		0x40000011
+				MX8MQ_IOMUXC_SAI2_TXD0_GPIO4_IO26		0x40000011
+				MX8MQ_IOMUXC_SAI2_RXFS_GPIO4_IO21		0x40000011
+				MX8MQ_IOMUXC_NAND_DATA05_GPIO3_IO11		0x40000011
+				MX8MQ_IOMUXC_NAND_CLE_GPIO3_IO5			0x40000011
+				MX8MQ_IOMUXC_NAND_CE2_B_GPIO3_IO3		0x40000011
+				MX8MQ_IOMUXC_NAND_DATA01_GPIO3_IO7		0x40000011
+				MX8MQ_IOMUXC_NAND_CE0_B_GPIO3_IO1		0x40000011
+				MX8MQ_IOMUXC_NAND_READY_B_GPIO3_IO16		0x40000011
+				MX8MQ_IOMUXC_NAND_DQS_GPIO3_IO14		0x40000011
+				MX8MQ_IOMUXC_GPIO1_IO02_GPIO1_IO2		0x40000011
+				MX8MQ_IOMUXC_NAND_WP_B_GPIO3_IO18		0x40000011
+				MX8MQ_IOMUXC_NAND_WE_B_GPIO3_IO17		0x40000011
+				MX8MQ_IOMUXC_NAND_DATA03_GPIO3_IO9		0x40000011
+				MX8MQ_IOMUXC_NAND_DATA00_GPIO3_IO6		0x40000011
+				MX8MQ_IOMUXC_NAND_DATA02_GPIO3_IO8		0x40000011
+				MX8MQ_IOMUXC_SAI5_RXFS_GPIO3_IO19		0x40000011
+				MX8MQ_IOMUXC_SAI5_RXD0_GPIO3_IO21		0x40000011
+				MX8MQ_IOMUXC_SAI5_RXD2_GPIO3_IO23	 	0x40000011
+				MX8MQ_IOMUXC_SAI5_RXC_GPIO3_IO20		0x40000011
+				MX8MQ_IOMUXC_SAI5_RXD1_GPIO3_IO22		0x40000011
+				MX8MQ_IOMUXC_SAI5_RXD3_GPIO3_IO24		0x40000011
+				MX8MQ_IOMUXC_SAI5_MCLK_GPIO3_IO25		0x40000011
+				MX8MQ_IOMUXC_SAI1_RXC_GPIO4_IO1			0x40000011
+				MX8MQ_IOMUXC_SAI1_RXD2_GPIO4_IO4		0x40000011
+				MX8MQ_IOMUXC_SAI1_TXD1_GPIO4_IO13		0x40000011
+				MX8MQ_IOMUXC_SAI1_RXD3_GPIO4_IO5		0x40000011
+				MX8MQ_IOMUXC_SAI1_TXD6_GPIO4_IO18		0x40000011
+				MX8MQ_IOMUXC_SAI1_TXD2_GPIO4_IO14		0x40000011
+				MX8MQ_IOMUXC_GPIO1_IO11_GPIO1_IO11		0x40000011
+				MX8MQ_IOMUXC_SD2_CD_B_GPIO2_IO12		0x40000011
+				MX8MQ_IOMUXC_SD2_RESET_B_GPIO2_IO19		0x40000011
+				MX8MQ_IOMUXC_SAI2_RXD0_GPIO4_IO23		0x40000011
+			>;
+		};
 
 		pinctrl_csi1: csi1grp {
 			fsl,pins = <
@@ -606,44 +660,6 @@
 		status = "okay";
 	};
 
-	dsi_lvds_bridge: sn65dsi84@2c {
-		compatible = "ti,sn65dsi83";
-		reg = <0x2c>;
-		ti,dsi-lanes = <4>;
-		ti,lvds-format = <1>;
-		ti,lvds-bpp = <24>;
-		ti,width-mm = <154>;
-		ti,height-mm = <87>;
-		enable-gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_lvds>;
-		status = "disabled";
-
-		display-timings {
-			lvds {
-				clock-frequency = <33000000>;
-				hactive = <800>;
-				vactive = <480>;
-				hback-porch = <40>;
-				hfront-porch = <40>;
-				vback-porch = <29>;
-				vfront-porch = <13>;
-				hsync-len = <48>;
-				vsync-len = <3>;
-				hsync-active = <0>;
-				vsync-active = <0>;
-				de-active = <1>;
-				pixelclk-active = <0>;
-			};
-		};
-
-		port {
-			sn65dsi84_in: endpoint {
-				remote-endpoint = <&mipi_dsi_bridge_out>;
-			};
-		};
-	};
-
 	reg_cpu_dvfs: tps62361@60 {
 		reg = <0x60>;
 		compatible = "ti,tps62361";
@@ -664,7 +680,7 @@
 
 	/* DS1337 RTC module */
 	rtc@0x68 {
-		status = "okay";
+		status = "disabled";
 		compatible = "dallas,ds1337";
 		reg = <0x68>;
 		pinctrl-names = "default";
@@ -691,7 +707,7 @@
 
 	/* USB-C controller */
 	typec_ptn5150: typec@3d {
-		status = "okay";
+		status = "disabled";
 		compatible = "nxp,ptn5150";
 		reg = <0x3d>;
 		pinctrl-names = "default";
@@ -716,8 +732,6 @@
 		assigned-clock-rates = <24000000>;
 #endif
 		csi_id = <0>;
-		pwn-gpios = <&gpio4 8 GPIO_ACTIVE_HIGH>;
-		rst-gpios = <&gpio5 28 GPIO_ACTIVE_HIGH>;
 		mclk = <24000000>;
 		mclk_source = <0>;
 		port {
@@ -739,10 +753,10 @@
 	clock-frequency = <100000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c4>;
-	status = "okay";
+	status = "disabled";
 
 	ov5640_mipi2: ov5640_mipi2@3c {
-		status = "okay";
+		status = "disabled";
 		compatible = "ovti,ov5640_mipi";
 		reg = <0x3c>;
 		pinctrl-names = "default";
@@ -759,8 +773,6 @@
 		assigned-clock-rates = <24000000>;
 #endif
 		csi_id = <1>;
-		pwn-gpios = <&gpio4 9 GPIO_ACTIVE_HIGH>;
-		rst-gpios = <&gpio5 29 GPIO_ACTIVE_HIGH>;
 		mclk = <24000000>;
 		mclk_source = <0>;
 		port {
@@ -772,19 +784,17 @@
 };
 
 &pcie0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_pcie0>;
-	reset-gpio = <&gpio4 7 GPIO_ACTIVE_LOW>;
+	fsl,max-link-speed = <1>;
 	ext_osc = <1>;
 	status = "okay";
+	hard-wired;
 };
 
 &pcie1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_pcie1>;
-	reset-gpio = <&gpio4 19 GPIO_ACTIVE_LOW>;
+	fsl,max-link-speed = <1>;
 	ext_osc = <1>;
-	status = "disabled";
+	status = "okay";
+	hard-wired;
 };
 
 /* Console */
@@ -802,7 +812,7 @@
 	pinctrl-0 = <&pinctrl_uart2>;
 	assigned-clocks = <&clk IMX8MQ_CLK_UART2>;
 	assigned-clock-parents = <&clk IMX8MQ_CLK_25M>;
-	status = "okay";
+	status = "disabled";
 };
 
 /* Header */
@@ -811,7 +821,7 @@
 	pinctrl-0 = <&pinctrl_uart3>;
 	assigned-clocks = <&clk IMX8MQ_CLK_UART3>;
 	assigned-clock-parents = <&clk IMX8MQ_CLK_25M>;
-	status = "okay";
+	status = "disabled";
 };
 
 /* Bluetooth */
@@ -846,7 +856,7 @@
 &usb_dwc3_0 {
 	status = "okay";
 	extcon = <&typec_ptn5150>;
-	dr_mode = "otg";
+	dr_mode = "host";
 };
 
 &usb3_phy1 {
@@ -914,7 +924,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_wdog>;
 	fsl,wdog_b;
-	status = "okay";
+	status = "disabled";
 };
 
 &mu {
@@ -1016,9 +1026,24 @@
 &mipi_dsi_bridge {
 	status = "disabled";
 
+	panel@0 {
+		reg = <0>;
+		status = "okay";
+		compatible = "sgd,gktw70sdae4sd";
+		dsi-lanes = <4>;
+		panel-width-mm  = <154>;
+		panel-height-mm = <87>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&mipi_dsi_bridge_out>;
+			};
+		};
+	};
+
 	port@1 {
 		mipi_dsi_bridge_out: endpoint {
-			remote-endpoint = <&sn65dsi84_in>;
+			remote-endpoint = <&panel_in>;
 		};
 	};
 };
@@ -1028,7 +1053,7 @@
 	pinctrl-0 = <&pinctrl_ecspi1>;
 	cs-gpios = <&gpio5 9 0>;
 	fsl,spi-num-chipselects = <1>;
-	status = "okay";
+	status = "disabled";
 
 	/* Resistive touch controller */
 	ads7846@0 {
@@ -1059,6 +1084,7 @@
 &pwm1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pwm1>;
+	status = "disabled";
 };
 
 &snvs_rtc {

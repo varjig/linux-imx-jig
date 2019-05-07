@@ -21,15 +21,3 @@
 &hdmi {
 	status = "okay";
 };
-
-&gpio1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hdmi>;
-
-	hdmi_on_hog {
-		gpio-hog;
-		gpios = <5 0>;
-		output-low;
-		line-name = "hdmi_on";
-	};
-};
