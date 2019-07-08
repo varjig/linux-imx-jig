@@ -32,7 +32,6 @@
 #include <video/videomode.h>
 
 #include "sn65dsi83_brg.h"
-
 /* Register addresses */
 
 #define SN65DSI83_SOFT_RESET         0x09
@@ -224,128 +223,134 @@ static int sn65dsi83_brg_configure(struct sn65dsi83_brg *brg)
     int regval = 0;
     struct i2c_client *client = I2C_CLIENT(brg);
     struct videomode *vm = VM(brg);
-
-    u32 dsi_clk = (((PIXCLK * BPP(brg)) / DSI_LANES(brg)) >> 1);
-
-    dev_info(&client->dev, "DSI clock [ %u ] Hz\n",dsi_clk);
-    dev_info(&client->dev, "GeoMetry [ %d x %d ] Hz\n",HACTIVE,VACTIVE);
-
-    /* Reset PLL_EN and SOFT_RESET registers */
-    SN65DSI83_WRITE(SN65DSI83_SOFT_RESET,0x00);
-    SN65DSI83_WRITE(SN65DSI83_PLL_EN,0x00);
-
-    /* LVDS clock setup */
-    if  ((25000000 <= PIXCLK) && (PIXCLK < 37500000))
+    u32 dsi_clk;
+    u32 i;
+    
+    if(brg->pairs_len==0x00)
+    {
+        dsi_clk = (((PIXCLK * BPP(brg)) / DSI_LANES(brg)) >> 1);
+    
+        dev_info(&client->dev, "DSI clock [ %u ] Hz\n",dsi_clk);
+        dev_info(&client->dev, "GeoMetry [ %d x %d ] Hz\n",HACTIVE,VACTIVE);
+    
+        /* LVDS clock setup */
+        if  ((25000000 <= PIXCLK) && (PIXCLK < 37500000))
+            regval = 0;
+        else
+            regval = sn65dsi83_calk_clk_range(0x01, 0x05, 37500000, 25000000,
+                        PIXCLK);
+    
+        if (regval < 0) {
+            dev_err(&client->dev, "failed to configure LVDS clock");
+            return -EINVAL;
+        }
+    
+        regval = (regval << LVDS_CLK_RANGE_SHIFT);
+        regval |= (1 << HS_CLK_SRC_SHIFT); /* Use DSI clock */
+        SN65DSI83_WRITE(SN65DSI83_CORE_PLL,regval);
+    
+        /* DSI clock range */
+        regval = sn65dsi83_calk_clk_range(0x08, 0x64, 40000000, 5000000, dsi_clk);
+        if (regval < 0) {
+            dev_err(&client->dev, "failed to configure DSI clock range\n");
+            return -EINVAL;
+        }
+        SN65DSI83_WRITE(SN65DSI83_CHA_DSI_CLK_RNG,regval);
+    
+        /* DSI clock divider */
+        regval = sn65dsi83_calk_div(0x0, 0x18, 1, 1, dsi_clk, PIXCLK);
+        if (regval < 0) {
+            dev_err(&client->dev, "failed to calculate DSI clock divider");
+            return -EINVAL;
+        }
+    
+        regval = regval << DSI_CLK_DIV_SHIFT;
+        SN65DSI83_WRITE(SN65DSI83_PLL_DIV,regval);
+    
+        /* Configure DSI_LANES  */
+        regval = SN65DSI83_READ(SN65DSI83_DSI_CFG);
+        regval &= ~(3 << CHA_DSI_LANES_SHIFT);
+        regval |= ((4 - DSI_LANES(brg)) << CHA_DSI_LANES_SHIFT);
+        SN65DSI83_WRITE(SN65DSI83_DSI_CFG,regval);
+    
+        /* CHA_DSI_DATA_EQ - No Equalization */
+        /* CHA_DSI_CLK_EQ  - No Equalization */
+        SN65DSI83_WRITE(SN65DSI83_DSI_EQ,0x00);
+    
+        /* Video formats */
         regval = 0;
-    else
-        regval = sn65dsi83_calk_clk_range(0x01, 0x05, 37500000, 25000000,
-                    PIXCLK);
-
-    if (regval < 0) {
-        dev_err(&client->dev, "failed to configure LVDS clock");
-        return -EINVAL;
+        if (FLAGS & DISPLAY_FLAGS_HSYNC_LOW)
+            regval |= (1 << HS_NEG_POLARITY_SHIFT);
+    
+        if (FLAGS & DISPLAY_FLAGS_VSYNC_LOW)
+            regval |= (1 << VS_NEG_POLARITY_SHIFT);
+    
+        if (FLAGS & DISPLAY_FLAGS_DE_LOW)
+            regval |= (1 << DE_NEG_POLARITY_SHIFT);
+    
+        if (BPP(brg) == 24)
+            regval |= (1 << CHA_24BPP_MODE_SHIFT);
+    
+        if (FORMAT(brg) == 1)
+            regval |= (1 << CHA_24BPP_FMT1_SHIFT);
+    
+        regval |= (1 << LVDS_LINK_CFG_SHIFT);
+        SN65DSI83_WRITE(SN65DSI83_LVDS_MODE,regval);
+    
+        /* Voltage and pins */
+        SN65DSI83_WRITE(SN65DSI83_LVDS_SIGN,0x00);
+        SN65DSI83_WRITE(SN65DSI83_LVDS_TERM,0x03);
+        SN65DSI83_WRITE(SN65DSI83_LVDS_CM_ADJ,0x00);
+    
+        /* Configure sync delay to minimal allowed value */
+        SN65DSI83_WRITE(SN65DSI83_CHA_SYNC_DELAY_LO,0x21);
+        SN65DSI83_WRITE(SN65DSI83_CHA_SYNC_DELAY_HI,0x00);
+    
+        /* Geometry */
+        SN65DSI83_WRITE(SN65DSI83_CHA_LINE_LEN_LO,LOW(HACTIVE));
+        SN65DSI83_WRITE(SN65DSI83_CHA_LINE_LEN_HI,HIGH(HACTIVE));
+    
+        SN65DSI83_WRITE(SN65DSI83_CHA_VERT_LINES_LO,LOW(VACTIVE));
+        SN65DSI83_WRITE(SN65DSI83_CHA_VERT_LINES_HI,HIGH(VACTIVE));
+    
+        SN65DSI83_WRITE(SN65DSI83_CHA_HSYNC_WIDTH_LO,LOW(HPW));
+        SN65DSI83_WRITE(SN65DSI83_CHA_HSYNC_WIDTH_HI,HIGH(HPW));
+    
+        SN65DSI83_WRITE(SN65DSI83_CHA_VSYNC_WIDTH_LO,LOW(VPW));
+        SN65DSI83_WRITE(SN65DSI83_CHA_VSYNC_WIDTH_HI,HIGH(VPW));
+    
+        SN65DSI83_WRITE(SN65DSI83_CHA_HORZ_BACKPORCH,LOW(HBP));
+        SN65DSI83_WRITE(SN65DSI83_CHA_VERT_BACKPORCH,LOW(VBP));
+    
+        SN65DSI83_WRITE(SN65DSI83_CHA_HORZ_FRONTPORCH,LOW(HFP));
+        SN65DSI83_WRITE(SN65DSI83_CHA_VERT_FRONTPORCH,LOW(VFP));
+    
+        SN65DSI83_WRITE(SN65DSI83_TEST_PATTERN,0x00);
+        SN65DSI83_WRITE(SN65DSI83_REG_3D,0x00);
+        SN65DSI83_WRITE(SN65DSI83_REG_3E,0x00);
+    
+        /* mute channel B */
+        SN65DSI83_WRITE(SN65DSI83_CHB_DSI_CLK_RNG, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_LINE_LEN_LO, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_LINE_LEN_HI, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_VERT_LINES_LO, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_VERT_LINES_HI, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_SYNC_DELAY_LO, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_SYNC_DELAY_HI, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_HSYNC_WIDTH_LO, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_HSYNC_WIDTH_HI, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_VSYNC_WIDTH_LO, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_VSYNC_WIDTH_HI, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_HORZ_BACKPORCH, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_VERT_BACKPORCH, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_HORZ_FRONTPORCH, 0x00);
+        SN65DSI83_WRITE(SN65DSI83_CHB_VERT_FRONTPORCH, 0x00);
     }
-
-    regval = (regval << LVDS_CLK_RANGE_SHIFT);
-    regval |= (1 << HS_CLK_SRC_SHIFT); /* Use DSI clock */
-    SN65DSI83_WRITE(SN65DSI83_CORE_PLL,regval);
-
-    /* DSI clock range */
-    regval = sn65dsi83_calk_clk_range(0x08, 0x64, 40000000, 5000000, dsi_clk);
-    if (regval < 0) {
-        dev_err(&client->dev, "failed to configure DSI clock range\n");
-        return -EINVAL;
+    else{
+        for(i=0;i<brg->pairs_len;i++)
+	    SN65DSI83_WRITE(brg->addresses[i],brg->values[i]);
     }
-    SN65DSI83_WRITE(SN65DSI83_CHA_DSI_CLK_RNG,regval);
-
-    /* DSI clock divider */
-    regval = sn65dsi83_calk_div(0x0, 0x18, 1, 1, dsi_clk, PIXCLK);
-    if (regval < 0) {
-        dev_err(&client->dev, "failed to calculate DSI clock divider");
-        return -EINVAL;
-    }
-
-    regval = regval << DSI_CLK_DIV_SHIFT;
-    SN65DSI83_WRITE(SN65DSI83_PLL_DIV,regval);
-
-    /* Configure DSI_LANES  */
-    regval = SN65DSI83_READ(SN65DSI83_DSI_CFG);
-    regval &= ~(3 << CHA_DSI_LANES_SHIFT);
-    regval |= ((4 - DSI_LANES(brg)) << CHA_DSI_LANES_SHIFT);
-    SN65DSI83_WRITE(SN65DSI83_DSI_CFG,regval);
-
-    /* CHA_DSI_DATA_EQ - No Equalization */
-    /* CHA_DSI_CLK_EQ  - No Equalization */
-    SN65DSI83_WRITE(SN65DSI83_DSI_EQ,0x00);
-
-    /* Video formats */
-    regval = 0;
-    if (FLAGS & DISPLAY_FLAGS_HSYNC_LOW)
-        regval |= (1 << HS_NEG_POLARITY_SHIFT);
-
-    if (FLAGS & DISPLAY_FLAGS_VSYNC_LOW)
-        regval |= (1 << VS_NEG_POLARITY_SHIFT);
-
-    if (FLAGS & DISPLAY_FLAGS_DE_LOW)
-        regval |= (1 << DE_NEG_POLARITY_SHIFT);
-
-    if (BPP(brg) == 24)
-        regval |= (1 << CHA_24BPP_MODE_SHIFT);
-
-    if (FORMAT(brg) == 1)
-        regval |= (1 << CHA_24BPP_FMT1_SHIFT);
-
-    regval |= (1 << LVDS_LINK_CFG_SHIFT);
-    SN65DSI83_WRITE(SN65DSI83_LVDS_MODE,regval);
-
-    /* Voltage and pins */
-    SN65DSI83_WRITE(SN65DSI83_LVDS_SIGN,0x00);
-    SN65DSI83_WRITE(SN65DSI83_LVDS_TERM,0x03);
-    SN65DSI83_WRITE(SN65DSI83_LVDS_CM_ADJ,0x00);
-
-    /* Configure sync delay to minimal allowed value */
-    SN65DSI83_WRITE(SN65DSI83_CHA_SYNC_DELAY_LO,0x21);
-    SN65DSI83_WRITE(SN65DSI83_CHA_SYNC_DELAY_HI,0x00);
-
-    /* Geometry */
-    SN65DSI83_WRITE(SN65DSI83_CHA_LINE_LEN_LO,LOW(HACTIVE));
-    SN65DSI83_WRITE(SN65DSI83_CHA_LINE_LEN_HI,HIGH(HACTIVE));
-
-    SN65DSI83_WRITE(SN65DSI83_CHA_VERT_LINES_LO,LOW(VACTIVE));
-    SN65DSI83_WRITE(SN65DSI83_CHA_VERT_LINES_HI,HIGH(VACTIVE));
-
-    SN65DSI83_WRITE(SN65DSI83_CHA_HSYNC_WIDTH_LO,LOW(HPW));
-    SN65DSI83_WRITE(SN65DSI83_CHA_HSYNC_WIDTH_HI,HIGH(HPW));
-
-    SN65DSI83_WRITE(SN65DSI83_CHA_VSYNC_WIDTH_LO,LOW(VPW));
-    SN65DSI83_WRITE(SN65DSI83_CHA_VSYNC_WIDTH_HI,HIGH(VPW));
-
-    SN65DSI83_WRITE(SN65DSI83_CHA_HORZ_BACKPORCH,LOW(HBP));
-    SN65DSI83_WRITE(SN65DSI83_CHA_VERT_BACKPORCH,LOW(VBP));
-
-    SN65DSI83_WRITE(SN65DSI83_CHA_HORZ_FRONTPORCH,LOW(HFP));
-    SN65DSI83_WRITE(SN65DSI83_CHA_VERT_FRONTPORCH,LOW(VFP));
-
-    SN65DSI83_WRITE(SN65DSI83_TEST_PATTERN,0x00);
-    SN65DSI83_WRITE(SN65DSI83_REG_3D,0x00);
-    SN65DSI83_WRITE(SN65DSI83_REG_3E,0x00);
-
-    /* mute channel B */
-    SN65DSI83_WRITE(SN65DSI83_CHB_DSI_CLK_RNG, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_LINE_LEN_LO, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_LINE_LEN_HI, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_LINES_LO, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_LINES_HI, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_SYNC_DELAY_LO, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_SYNC_DELAY_HI, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_HSYNC_WIDTH_LO, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_HSYNC_WIDTH_HI, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_VSYNC_WIDTH_LO, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_VSYNC_WIDTH_HI, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_HORZ_BACKPORCH, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_BACKPORCH, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_HORZ_FRONTPORCH, 0x00);
-    SN65DSI83_WRITE(SN65DSI83_CHB_VERT_FRONTPORCH, 0x00);
+    
     return 0;
 }
 

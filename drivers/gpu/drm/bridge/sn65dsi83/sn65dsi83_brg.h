@@ -27,6 +27,9 @@ struct sn65dsi83_brg {
 
     u8 num_dsi_lanes;
     struct sn65dsi83_brg_funcs *funcs;
+    u32 addresses[100];
+    u32 values[100];
+    u32 pairs_len;
 };
 struct sn65dsi83_brg *sn65dsi83_brg_get(void);
 

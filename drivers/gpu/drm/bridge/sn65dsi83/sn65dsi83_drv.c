@@ -208,11 +208,11 @@ static int sn65dsi83_parse_dt(struct device_node *np,
     struct device *dev = &sn65dsi83->brg->client->dev;
     u32 num_lanes = 2, bpp = 24, format = 2, width = 149, height = 93;
     struct device_node *endpoint;
+    struct property *prop;
 
     endpoint = of_graph_get_next_endpoint(np, NULL);
     if (!endpoint)
         return -ENODEV;
-
     sn65dsi83->host_node = of_graph_get_remote_port_parent(endpoint);
     if (!sn65dsi83->host_node) {
         of_node_put(endpoint);
@@ -224,7 +224,16 @@ static int sn65dsi83_parse_dt(struct device_node *np,
     of_property_read_u32(np, "ti,lvds-bpp", &bpp);
     of_property_read_u32(np, "ti,width-mm", &width);
     of_property_read_u32(np, "ti,height-mm", &height);
-
+    prop = of_find_property(np, "ti,addresses", NULL);
+    sn65dsi83->brg->pairs_len=0;
+    if(prop)
+	of_property_read_u32_array(np, "ti,addresses", &sn65dsi83->brg->addresses[0], prop->length/sizeof(u32));
+    prop = of_find_property(np, "ti,values", NULL);
+    if(prop)
+	of_property_read_u32_array(np, "ti,values", &sn65dsi83->brg->values[0], prop->length/sizeof(u32));
+    if(prop)
+	sn65dsi83->brg->pairs_len=prop->length/sizeof(u32);
+    
     if (num_lanes < 1 || num_lanes > 4) {
         dev_err(dev, "Invalid dsi-lanes: %d\n", num_lanes);
         return -EINVAL;
