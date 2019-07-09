@@ -112,6 +112,7 @@ struct ov5640 {
 	int blue;
 	int ae_mode;
 
+	bool uyvy_fmt;
 	u32 mclk;
 	u8 mclk_source;
 	struct clk *sensor_clk;
@@ -173,6 +174,7 @@ struct ov5640_res ov5640_valid_res[] = {
 	[4] = {2592, 1944},
 };
 
+#define OV5640_FMT_OFFSET_VGA (95)
 static struct reg_value ov5640_init_setting_30fps_VGA[] = {
 
 	{0x3103, 0x11, 0, 0}, {0x3008, 0x82, 0, 5}, {0x3008, 0x42, 0, 0},
@@ -206,11 +208,11 @@ static struct reg_value ov5640_init_setting_30fps_VGA[] = {
 	{0x3a0d, 0x04, 0, 0}, {0x3a14, 0x03, 0, 0}, {0x3a15, 0xd8, 0, 0},
 	{0x4001, 0x02, 0, 0}, {0x4004, 0x02, 0, 0}, {0x3000, 0x00, 0, 0},
 	{0x3002, 0x1c, 0, 0}, {0x3004, 0xff, 0, 0}, {0x3006, 0xc3, 0, 0},
-	{0x300e, 0x45, 0, 0}, {0x302e, 0x08, 0, 0}, {0x4300, 0x32, 0, 0},
+	{0x300e, 0x45, 0, 0}, {0x302e, 0x08, 0, 0}, {0x4300, 0x30, 0, 0},
 	{0x501f, 0x00, 0, 0}, {0x4713, 0x03, 0, 0}, {0x4407, 0x04, 0, 0},
 	{0x440e, 0x00, 0, 0}, {0x460b, 0x35, 0, 0}, {0x460c, 0x22, 0, 0},
 	{0x4837, 0x0a, 0, 0}, {0x4800, 0x04, 0, 0}, {0x3824, 0x02, 0, 0},
-	{0x5000, 0xa7, 0, 0}, {0x5001, 0xa3, 0, 0}, {0x5180, 0xff, 0, 0},
+	{0x5000, 0xa7, 0, 0}, {0x5001, 0xa3, 0, 0}, {0x5180, 0xff, 0, 0}, {0x503D, 0x80, 0, 0},
 	{0x5181, 0xf2, 0, 0}, {0x5182, 0x00, 0, 0}, {0x5183, 0x14, 0, 0},
 	{0x5184, 0x25, 0, 0}, {0x5185, 0x24, 0, 0}, {0x5186, 0x09, 0, 0},
 	{0x5187, 0x09, 0, 0}, {0x5188, 0x09, 0, 0}, {0x5189, 0x88, 0, 0},
@@ -1170,6 +1172,10 @@ static int ov5640_init_mode(struct ov5640 *sensor,
 		return -1;
 	}
 
+	if (sensor->uyvy_fmt == true)
+		ov5640_init_setting_30fps_VGA[OV5640_FMT_OFFSET_VGA].u8Val =  \
+								0x32;
+
 	dn_mode = ov5640_mode_info_data[frame_rate][mode].dn_mode;
 	orig_dn_mode = ov5640_mode_info_data[frame_rate][orig_mode].dn_mode;
 	if (mode == ov5640_mode_INIT) {
@@ -1716,6 +1722,7 @@ static int ov5640_probe(struct i2c_client *client,
 		return retval;
 	}
 
+	sensor->uyvy_fmt = of_property_read_bool(dev->of_node, "uyvy-fmt");
 	clk_prepare_enable(sensor->sensor_clk);
 
 	sensor->io_init = ov5640_reset;
