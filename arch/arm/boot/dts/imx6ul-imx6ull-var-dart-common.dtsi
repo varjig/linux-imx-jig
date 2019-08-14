@@ -37,14 +37,13 @@
 			status = "okay";
 		};
 
-#ifdef WIFI
 		reg_sd1_vmmc: regulator@2 {
 			compatible = "regulator-fixed";
 			regulator-name = "VSD_3V3";
 			regulator-min-microvolt = <3300000>;
 			regulator-max-microvolt = <3300000>;
 		};
-#endif
+
 		reg_gpio_dvfs: regulator-gpio {
 			compatible = "regulator-gpio";
 			regulator-min-microvolt = <1300000>;
@@ -167,7 +166,6 @@
 	status = "okay";
 };
 
-#ifdef WIFI
 #ifdef WIFI_5G
 /*  Wi-Fi/BT SD Card Slot Definition */
 
@@ -196,7 +194,6 @@
 	status = "okay";
 };
 #endif /* WIFI_5G */
-#endif
 
 #ifdef NAND
 &gpmi {
