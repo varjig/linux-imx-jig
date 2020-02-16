@@ -856,7 +856,7 @@ static int crng_fast_load(const char *cp, size_t len)
 		invalidate_batched_entropy();
 		crng_init = 1;
 		wake_up_interruptible(&crng_init_wait);
-		pr_notice("random: fast init done\n");
+		pr_debug("random: fast init done\n");
 	}
 	return 1;
 }
@@ -941,15 +941,15 @@ static void crng_reseed(struct crng_state *crng, struct entropy_store *r)
 		crng_init = 2;
 		process_random_ready_list();
 		wake_up_interruptible(&crng_init_wait);
-		pr_notice("random: crng init done\n");
+		pr_debug("random: crng init done\n");
 		if (unseeded_warning.missed) {
-			pr_notice("random: %d get_random_xx warning(s) missed "
+			pr_debug("random: %d get_random_xx warning(s) missed "
 				  "due to ratelimiting\n",
 				  unseeded_warning.missed);
 			unseeded_warning.missed = 0;
 		}
 		if (urandom_warning.missed) {
-			pr_notice("random: %d urandom warning(s) missed "
+			pr_debug("random: %d urandom warning(s) missed "
 				  "due to ratelimiting\n",
 				  urandom_warning.missed);
 			urandom_warning.missed = 0;
@@ -1598,7 +1598,7 @@ static void _warn_unseeded_randomness(const char *func_name, void *caller,
 	print_once = true;
 #endif
 	if (__ratelimit(&unseeded_warning))
-		pr_notice("random: %s called from %pS with crng_init=%d\n",
+		pr_debug("random: %s called from %pS with crng_init=%d\n",
 			  func_name, caller, crng_init);
 }
 
@@ -1865,7 +1865,7 @@ urandom_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 	if (!crng_ready() && maxwarn > 0) {
 		maxwarn--;
 		if (__ratelimit(&urandom_warning))
-			printk(KERN_NOTICE "random: %s: uninitialized "
+			printk(KERN_DEBUG "random: %s: uninitialized "
 			       "urandom read (%zd bytes read)\n",
 			       current->comm, nbytes);
 		spin_lock_irqsave(&primary_crng.lock, flags);
