@@ -812,7 +812,7 @@ static int crng_fast_load(const char *cp, size_t len)
 	if (crng_init_cnt >= CRNG_INIT_CNT_THRESH) {
 		crng_init = 1;
 		wake_up_interruptible(&crng_init_wait);
-		pr_notice("random: fast init done\n");
+		pr_debug("random: fast init done\n");
 	}
 	spin_unlock_irqrestore(&primary_crng.lock, flags);
 	return 1;
@@ -850,7 +850,7 @@ static void crng_reseed(struct crng_state *crng, struct entropy_store *r)
 		crng_init = 2;
 		process_random_ready_list();
 		wake_up_interruptible(&crng_init_wait);
-		pr_notice("random: crng init done\n");
+		pr_debug("random: crng init done\n");
 	}
 	spin_unlock_irqrestore(&primary_crng.lock, flags);
 }
@@ -1505,7 +1505,7 @@ void get_random_bytes(void *buf, int nbytes)
 
 #if DEBUG_RANDOM_BOOT > 0
 	if (!crng_ready())
-		printk(KERN_NOTICE "random: %pF get_random_bytes called "
+		printk(KERN_DEBUG "random: %pF get_random_bytes called "
 		       "with crng_init = %d\n", (void *) _RET_IP_, crng_init);
 #endif
 	trace_get_random_bytes(nbytes, _RET_IP_);
@@ -1744,7 +1744,7 @@ urandom_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 
 	if (!crng_ready() && maxwarn > 0) {
 		maxwarn--;
-		printk(KERN_NOTICE "random: %s: uninitialized urandom read "
+		printk(KERN_DEBUG "random: %s: uninitialized urandom read "
 		       "(%zd bytes read)\n",
 		       current->comm, nbytes);
 		spin_lock_irqsave(&primary_crng.lock, flags);
