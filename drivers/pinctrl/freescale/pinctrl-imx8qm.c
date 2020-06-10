@@ -22,6 +22,7 @@
 #include <linux/pinctrl/pinctrl.h>
 #include <dt-bindings/pinctrl/pads-imx8qm.h>
 #include <soc/imx8/sc/sci.h>
+#include <linux/debugfs.h>
 
 #include "pinctrl-imx.h"
 
@@ -311,10 +312,24 @@ static struct of_device_id imx8qm_pinctrl_of_match[] = {
 	{ /* sentinel */ }
 };
 
+static int iomux_set(void *data, u64 value)
+{
+	sc_err_t err = SC_ERR_NONE;
+	int pin=((value&0xFFFFFFFF00000000)>>32);
+	int val=value&0xFFFFFFFF;
+	err = sc_pad_set(pinctrl_ipcHandle, pin, val);
+	if (err != SC_ERR_NONE)
+		printk("Error!!\n");
+	return 0;
+}
+
+DEFINE_SIMPLE_ATTRIBUTE(pinconf_dbg_iomux_fops, NULL,
+			iomux_set, "%llu\n");
 static int imx8qm_pinctrl_probe(struct platform_device *pdev)
 {
 	uint32_t mu_id;
 	sc_err_t sciErr = SC_ERR_NONE;
+	struct dentry *debugfs_root;
 
 	sciErr = sc_ipc_getMuID(&mu_id);
 	if (sciErr != SC_ERR_NONE) {
@@ -328,6 +343,10 @@ static int imx8qm_pinctrl_probe(struct platform_device *pdev)
 		pr_info("pinctrl: Cannot open MU channel to SCU\n");
 		return sciErr;
 	};
+
+	debugfs_root = debugfs_create_dir("jig_iomux", NULL);
+	debugfs_create_file("iomux-change",  (S_IRUGO | S_IWUSR | S_IWGRP),
+			    debugfs_root, NULL, &pinconf_dbg_iomux_fops);
 
 	return imx_pinctrl_probe(pdev, &imx8qm_pinctrl_info);
 }
