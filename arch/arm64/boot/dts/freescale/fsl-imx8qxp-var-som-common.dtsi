@@ -489,28 +489,6 @@
 	};
 };
 
-/* BT UART power domain */
-&pd_dma_lpuart0 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-
-	pd_dma2_chan8: PD_UART0_RX {
-		reg = <SC_R_DMA_2_CH8>;
-		power-domains =<&pd_dma_lpuart0>;
-		#power-domain-cells = <0>;
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		pd_dma2_chan9: PD_UART0_TX {
-			reg = <SC_R_DMA_2_CH9>;
-			power-domains =<&pd_dma2_chan8>;
-			#power-domain-cells = <0>;
-			#address-cells = <1>;
-			#size-cells = <0>;
-		};
-	};
-};
-
 /* Bluetooth/Header */
 &lpuart0 {
 	pinctrl-names = "default";
