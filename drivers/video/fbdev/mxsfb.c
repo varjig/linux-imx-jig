@@ -223,6 +223,7 @@ struct mxsfb_info {
 	char disp_dev[32];
 	struct mxc_dispdrv_handle *dispdrv;
 	int id;
+	u32 video_mem_size;
 	struct fb_var_screeninfo var;
 };
 
@@ -1149,6 +1150,11 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host)
 		goto put_display_node;
 	}
 
+	ret = of_property_read_u32(np, "video-mem-size",
+				   &host->video_mem_size);
+	if (ret < 0)
+		host->video_mem_size = 0;
+
 	ret = of_property_read_u32(display_np, "bits-per-pixel",
 				   &var->bits_per_pixel);
 	if (ret < 0) {
@@ -1249,6 +1255,8 @@ static int mxsfb_init_fbinfo(struct mxsfb_info *host)
 	fb_info->fix.line_length =
 		fb_info->var.xres * (fb_info->var.bits_per_pixel >> 3);
 	fb_info->fix.smem_len = SZ_32M;
+	if (host->video_mem_size)
+		fb_info->fix.smem_len = host->video_mem_size;
 
 	/* Memory allocation for framebuffer */
 	if (mxsfb_map_videomem(fb_info) < 0)
