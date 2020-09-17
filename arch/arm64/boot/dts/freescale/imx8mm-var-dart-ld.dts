@@ -653,18 +653,12 @@
 	pinctrl-0 = <&pinctrl_i2c2>;
 	status = "okay";
 
-	pca9534: gpio@20 {
-		compatible = "nxp,pca9534";
-		reg = <0x20>;
+        pca9534: gpio@20 {
+                compatible = "nxp,pca9534";
+                reg = <0x20>;
 		gpio-controller;
 		#gpio-cells = <2>;
 
-		hdmi_on_hog {
-			gpio-hog;
-			gpios = <0 0>;
-			output-high;
-			line-name = "sn65dsi83-on";
-		};
 	};
 
 	dsi_lvds_bridge: sn65dsi84@2c {
@@ -718,7 +712,7 @@
 			};
 		};
 	};
-
+	
 	ov5640_mipi1: ov5640_mipi1@3c {
 		status = "okay";
 		compatible = "ovti,ov5640_mipi";
