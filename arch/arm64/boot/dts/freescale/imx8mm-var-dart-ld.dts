@@ -645,50 +645,21 @@
 			};
 		};
 	};
-};
-
-&i2c2 {
-	clock-frequency = <100000>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c2>;
-	status = "okay";
-
-        pca9534: gpio@20 {
-                compatible = "nxp,pca9534";
-                reg = <0x20>;
-		gpio-controller;
-		#gpio-cells = <2>;
-
-	};
-
+	
 	dsi_lvds_bridge: sn65dsi84@2c {
 		compatible = "ti,sn65dsi83";
 		reg = <0x2c>;
 		ti,dsi-lanes = <4>;
 		ti,lvds-format = <1>;
 		ti,lvds-bpp = <24>;
+		ti,lvds-channels = <2>;
 		ti,width-mm = <154>;
 		ti,height-mm = <87>;
 		enable-gpios = <&gpio2 11 GPIO_ACTIVE_HIGH>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_lvds>;
 		status = "okay";
-	
-		ti,addresses = <
-			0x09 0x0A 0x0B 0x0D 0x10 0x11 0x12 0x13
-			0x18 0x19 0x1A 0x1B 0x20 0x21 0x22 0x23
-			0x24 0x25 0x26 0x27 0x28 0x29 0x2A 0x2B
-			0x2C 0x2D 0x2E 0x2F 0x30 0x31 0x32 0x33
-			0x34 0x35 0x36 0x37 0x38 0x39 0x3A 0x3B
-			0x3C 0x3D 0x3E 0x0D 0x09>;
-		ti,values = <
-			0x00 0x05 0x30 0x00 0x26 0x00 0x27 0x00
-			0x6c 0x00 0x03 0x00 0x40 0x06 0x00 0x00
-			0x00 0x00 0x00 0x00 0x41 0x03 0x00 0x00
-			0x64 0x00 0x00 0x00 0x03 0x00 0x00 0x00
-			0x50 0x00 0x00 0x00 0x00 0x00 0x00 0x00
-			0x00 0x00 0x00 0x01 0x01>;
-	
+
 		display-timings {
 			lvds {
 				clock-frequency = <66000000>;
@@ -706,12 +677,29 @@
 				pixelclk-active = <0>;
 			};
 		};
+
 		port {
-			lvds_from_dsi: endpoint {
-				remote-endpoint = <&dsi_to_lvds>;
+			dsi_lvds_bridge_in: endpoint {
+				remote-endpoint = <&mipi_dsi_out>;
 			};
 		};
 	};
+};
+
+&i2c2 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	status = "okay";
+
+        pca9534: gpio@20 {
+                compatible = "nxp,pca9534";
+                reg = <0x20>;
+		gpio-controller;
+		#gpio-cells = <2>;
+
+	};
+
 	
 	ov5640_mipi1: ov5640_mipi1@3c {
 		status = "okay";
@@ -987,8 +975,8 @@
 	status = "okay";
 
 	port@1 {
-		dsi_to_lvds: endpoint {
-			remote-endpoint = <&lvds_from_dsi>;
+		mipi_dsi_out: endpoint {
+			remote-endpoint = <&dsi_lvds_bridge_in>;
 			attach-bridge;
 		};
 	};
