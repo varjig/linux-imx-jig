@@ -517,48 +517,6 @@
 		};
 	};
 
-
-};
-
-&i2c2 {
-	clock-frequency = <100000>;
-	pinctrl-names = "default", "gpio";
-	pinctrl-0 = <&pinctrl_i2c2>;
-	pinctrl-1 = <&pinctrl_i2c2_gpio>;
-	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
-	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
-	status = "okay";
-
-	/* GPIO expander */
-	pca9534: gpio@20 {
-		compatible = "nxp,pca9534";
-		reg = <0x20>;
-		gpio-controller;
-		#gpio-cells = <2>;
-		
-		dsi_bridge_en {
-			gpio-hog;
-			gpios = <0 0>;
-			output-high;
-			line-name = "adapter-bridge-on";
-		};
-	};
-
-	/* GPIO expander */
-	pca9534_2: gpio@21 {
-		compatible = "nxp,pca9534";
-		reg = <0x21>;
-		gpio-controller;
-		#gpio-cells = <2>;
-		
-		dsi_swap {
-			gpio-hog;
-			gpios = <3 0>;
-			output-high;
-			line-name = "dsi-swap-en";
-		};
-	};
-
 	dsi_lvds_bridge: sn65dsi84@2c {
 		compatible = "ti,sn65dsi83";
 		reg = <0x2c>;
@@ -595,6 +553,46 @@
 			dsi_lvds_bridge_in: endpoint {
 				remote-endpoint = <&mipi_dsi_out>;
 			};
+		};
+	};
+};
+
+&i2c2 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	pinctrl-1 = <&pinctrl_i2c2_gpio>;
+	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+
+	/* GPIO expander */
+	pca9534: gpio@20 {
+		compatible = "nxp,pca9534";
+		reg = <0x20>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		
+		dsi_bridge_en {
+			gpio-hog;
+			gpios = <0 0>;
+			output-low;
+			line-name = "adapter-bridge-on";
+		};
+	};
+
+	/* GPIO expander */
+	pca9534_2: gpio@21 {
+		compatible = "nxp,pca9534";
+		reg = <0x21>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		
+		dsi_swap {
+			gpio-hog;
+			gpios = <3 0>;
+			output-low;
+			line-name = "dsi-swap-en";
 		};
 	};
 
@@ -840,9 +838,6 @@
 		ti,debounce-rep = /bits/ 16 <1>;
 		ti,settle-delay-usec = /bits/ 16 <150>;
 		ti,keep-vref-on;
-		
-		
-		
 		wakeup-source;
 		status = "okay";
 	};
