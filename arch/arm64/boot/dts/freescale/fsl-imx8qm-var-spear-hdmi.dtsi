@@ -12,29 +12,13 @@
  * GNU General Public License for more details.
  */
 
-&ldb1_phy {
-	status = "disabled";
-};
 
-&ldb1 {
-	status = "disabled";
-};
 
 &irqsteer_hdmi {
 	status = "okay";
 };
 
-&gpio4 {
-        pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_hdmi_i2c>;
 
-        hdmi_i2c_signal_route {
-                gpio-hog;
-                gpios = <27 GPIO_ACTIVE_HIGH>;
-                output-high;
-                line-name = "hdmi_i2c";
-        };
-};
 
 &hdmi {
 	compatible = "fsl,imx8qm-hdmi";
@@ -47,4 +31,68 @@
 				 <&clk IMX8QM_HDMI_AV_PLL_CLK>,
 				 <&clk IMX8QM_HDMI_AV_PLL_CLK>;
 	status = "okay";
+};
+
+&ldb1_phy {
+	status = "okay";
+};
+
+&ldb1 {
+	status = "okay";
+	fsl,dual-channel;
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+
+		display-timings {
+			lvds {
+				clock-frequency = <66000000>;
+				hactive = <1600>;
+				vactive = <480>;
+				hback-porch = <80>;
+				hfront-porch = <80>;
+				vback-porch = <29>;
+				vfront-porch = <13>;
+				hsync-len = <96>;
+				vsync-len = <3>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			};
+		};
+	};
+};
+
+&ldb2_phy {
+	status = "okay";
+};
+
+&ldb2 {
+	status = "okay";
+	fsl,dual-channel;
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+
+		display-timings {
+			lvds {
+				clock-frequency = <66000000>;
+				hactive = <1600>;
+				vactive = <480>;
+				hback-porch = <80>;
+				hfront-porch = <80>;
+				vback-porch = <29>;
+				vfront-porch = <13>;
+				hsync-len = <96>;
+				vsync-len = <3>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			};
+		};
+	};	
 };

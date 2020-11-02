@@ -74,34 +74,3 @@
 	};
 };
 
-&lvds0_pwm {
-        status = "okay";
-};
-
-&lvds1_pwm {
-        status = "disabled";
-};
-
-&backlight_lvds0 {
-	status = "okay";	
-};
-
-&backlight_lvds1 {
-	status = "disabled";	
-};
-
-&captouch {
-	status = "okay";
-};
-
-&gpio1 {
-        pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_hdmi_i2c>;
-
-        hdmi_i2c_signal_route {
-                gpio-hog;
-                gpios = <22 GPIO_ACTIVE_HIGH>;
-                output-low;
-                line-name = "hdmi_i2c";
-        };
-};

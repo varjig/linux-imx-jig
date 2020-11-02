@@ -24,18 +24,6 @@
 	status = "okay";
 };
 
-&gpio4 {
-        pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_hdmi_i2c>;
-
-        hdmi_i2c_signal_route {
-                gpio-hog;
-                gpios = <27 GPIO_ACTIVE_HIGH>;
-                output-low;
-                line-name = "hdmi_i2c";
-        };
-};
-
 &hdmi {
 	compatible = "fsl,imx8qm-dp";
 	dp-lane-mapping = <0x1b>;
