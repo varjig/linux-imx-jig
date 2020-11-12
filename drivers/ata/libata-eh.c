@@ -3038,7 +3038,7 @@ int ata_eh_reset(struct ata_link *link, int classify,
 
 	now = jiffies;
 	if (time_before(now, deadline)) {
-		unsigned long delta = deadline - now;
+		unsigned long delta = msecs_to_jiffies(1000);
 
 		ata_link_warn(failed_link,
 			"reset failed (errno=%d), retrying in %u secs\n",
