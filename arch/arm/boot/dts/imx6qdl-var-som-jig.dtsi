@@ -17,7 +17,33 @@
 };
 
 &ecspi3 {
-	status = "disabled";
+	fsl,spi-num-chipselects = <1>;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&pinctrl_ecspi3_1>;
+	pinctrl-1 = <&pinctrl_ecspi3_1_sleep>;
+	cs-gpios = <&gpio4 24 0>;
+	status = "okay";
+	
+	/* Touch */
+	ads7846@0 {
+		reg = <0>;	/* CS0 */
+		compatible = "ti,ads7846";
+		interrupt-parent = <&gpio4>;
+		interrupts = <25 0>;
+		spi-max-frequency = <1500000>;
+		pendown-gpio = <&gpio4 25 0>;
+		ti,x-min = /bits/ 16 <125>;
+		ti,x-max = /bits/ 16 <4008>;
+		ti,y-min = /bits/ 16 <282>;
+		ti,y-max = /bits/ 16 <3864>;
+		ti,x-plate-ohms = /bits/ 16 <180>;
+		ti,pressure-max = /bits/ 16 <255>;
+		ti,debounce-max = /bits/ 16 <10>;
+		ti,debounce-tol = /bits/ 16 <3>;
+		ti,debounce-rep = /bits/ 16 <1>;
+		ti,settle-delay-usec = /bits/ 16 <150>;
+		ti,keep-vref-on;
+	};
 };
 
 &hdmi_audio {
@@ -121,6 +147,15 @@
 				MX6QDL_PAD_CSI0_DAT18__GPIO6_IO04	0x1b0b1
 				MX6QDL_PAD_CSI0_DAT19__GPIO6_IO05	0x1b0b1
 				MX6QDL_PAD_GPIO_16__GPIO7_IO11		0x1b0b1
+			>;
+		};
+
+		pinctrl_ecspi3_1: ecspi3grp {
+			fsl,pins = <
+				MX6QDL_PAD_DISP0_DAT2__ECSPI3_MISO	0x100b1
+				MX6QDL_PAD_DISP0_DAT1__ECSPI3_MOSI	0x100b1
+				MX6QDL_PAD_DISP0_DAT0__ECSPI3_SCLK	0x100b1
+				MX6QDL_PAD_DISP0_DAT3__GPIO4_IO24	0x178b0 /* CS */
 			>;
 		};
 	};
