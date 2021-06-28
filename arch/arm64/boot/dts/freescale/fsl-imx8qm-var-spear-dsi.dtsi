@@ -1,0 +1,131 @@
+/*
+ * Copyright 2019 Variscite Ltd.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+
+
+&irqsteer_hdmi {
+	status = "okay";
+};
+
+
+
+&hdmi {
+	compatible = "fsl,imx8qm-hdmi";
+	fsl,cec;
+
+	assigned-clocks = <&clk IMX8QM_HDMI_PXL_SEL>,
+			  <&clk IMX8QM_HDMI_PXL_LINK_SEL>,
+			  <&clk IMX8QM_HDMI_PXL_MUX_SEL>;
+	assigned-clock-parents = <&clk IMX8QM_HDMI_AV_PLL_CLK>,
+				 <&clk IMX8QM_HDMI_AV_PLL_CLK>,
+				 <&clk IMX8QM_HDMI_AV_PLL_CLK>;
+	status = "okay";
+};
+
+&ldb1_phy {
+	status = "okay";
+};
+
+&ldb1 {
+	status = "okay";
+	fsl,dual-channel;
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+
+		display-timings {
+			lvds {
+				clock-frequency = <66000000>;
+				hactive = <1600>;
+				vactive = <480>;
+				hback-porch = <80>;
+				hfront-porch = <80>;
+				vback-porch = <29>;
+				vfront-porch = <13>;
+				hsync-len = <96>;
+				vsync-len = <3>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			};
+		};
+	};
+};
+
+&ldb2_phy {
+	status = "okay";
+};
+
+&ldb2 {
+	status = "okay";
+	fsl,dual-channel;
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "disabled";
+
+		display-timings {
+			lvds {
+				clock-frequency = <66000000>;
+				hactive = <1600>;
+				vactive = <480>;
+				hback-porch = <80>;
+				hfront-porch = <80>;
+				vback-porch = <29>;
+				vfront-porch = <13>;
+				hsync-len = <96>;
+				vsync-len = <3>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <0>;
+			};
+		};
+	};	
+};
+
+&mipi_dsi1 {
+	pwr-delay = <10>;
+	status = "okay";
+};
+
+&mipi_dsi_phy1 {
+	status = "okay";
+};
+
+&mipi_dsi_bridge1 {
+	status = "okay";
+
+	panel@0 {
+		compatible = "sgd,gktw70sdae4sd";
+		reg = <0>;
+		reset-gpio = <&pca9534 0 GPIO_ACTIVE_HIGH>;
+		dsi-lanes = <4>;
+		panel-width-mm = <68>;
+		panel-height-mm = <121>;
+		port {
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_bridge1_out>;
+			};
+		};
+	};
+
+	port@2 {
+		mipi_bridge1_out: endpoint {
+			remote-endpoint = <&panel1_in>;
+		};
+	};
+};
