@@ -12,9 +12,9 @@
  * GNU General Public License for more details.
  */
 
-#include "fsl-imx8qm-var-som-common.dtsi"
+#include "fsl-imx8qp-var-som-common.dtsi"
 #include "fsl-imx8qm-var-som-lvds.dtsi"
 
 / {
-	model = "Variscite VAR-SOM-MX8 i.MX8QM LVDS";
+	model = "Variscite VAR-SOM-MX8 i.MX8QP LVDS";
 };
