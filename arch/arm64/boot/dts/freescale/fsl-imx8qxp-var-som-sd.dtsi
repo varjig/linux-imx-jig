@@ -22,14 +22,18 @@
 	};
 };
 
-/* SD */
 &usdhc2 {
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_vsel>;
-	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_vsel>;
-	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_vsel>;
+	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_wifi>;
+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_wifi>;
+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_wifi>;
 	bus-width = <4>;
 	non-removable;
 	vmmc-supply = <&reg_audio>;
+	status = "okay";
+};
+
+/* Bluetooth */
+&lpuart0 {
 	status = "okay";
 };
