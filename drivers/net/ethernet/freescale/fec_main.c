@@ -66,6 +66,7 @@
 #include <asm/cacheflush.h>
 
 #include "fec.h"
+#include "adin_fixup.h"
 
 static void set_multicast_list(struct net_device *ndev);
 static void fec_enet_itr_coal_init(struct net_device *ndev);
@@ -231,6 +232,13 @@ MODULE_PARM_DESC(macaddr, "FEC Ethernet MAC address");
 static int mii_cnt;
 
 static bool fec_ready_for_phy_reset;
+
+static int cpu_is_mx6dl(void)
+{
+	int ret;
+	ret = of_machine_is_compatible("fsl,imx6dl");
+	return ret;
+}
 
 static inline
 struct bufdesc *fec_enet_get_nextdesc(struct bufdesc *bdp,
@@ -3656,6 +3664,10 @@ fec_probe(struct platform_device *pdev)
 	ret = register_netdev(ndev);
 	if (ret)
 		goto failed_register;
+
+	if (cpu_is_mx6dl()) {
+		adin_register_fixup(ndev);
+	}
 
 	device_init_wakeup(&ndev->dev, fep->wol_flag &
 			   FEC_WOL_HAS_MAGIC_PACKET);
