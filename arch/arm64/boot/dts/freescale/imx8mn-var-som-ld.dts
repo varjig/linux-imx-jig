@@ -10,7 +10,7 @@
 #include "imx8mn.dtsi"
 
 / {
-	model = "Variscite VAR-SOM-MX8MN";
+	model = "Variscite VAR-SOM-MX8M-NANO with DSI-to-LVDS bridge";
 	compatible = "variscite,var-som-mx8mn", "fsl,imx8mn";
 
 	chosen {
