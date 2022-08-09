@@ -356,11 +356,11 @@ dtb-$(CONFIG_SOC_IMX6SX) += \
 	imx6sx-sabreauto-m4.dtb \
 	imx6sx-sdb-reva.dtb \
 	imx6sx-sdb-reva-ldo.dtb \
-	imx6sx-sdb.dtb	\
+	imx6sx-sdb.dtb \
 	imx6sx-sdb-btwifi.dtb \
 	imx6sx-sdb-emmc.dtb \
 	imx6sx-sdb-lcdif1.dtb \
-	imx6sx-sdb-ldo.dtb	\
+	imx6sx-sdb-ldo.dtb \
 	imx6sx-sdb-m4.dtb \
 	imx6sx-sdb-mqs.dtb \
 	imx6sx-sdb-sai.dtb \
@@ -370,7 +370,7 @@ dtb-$(CONFIG_SOC_IMX6SX) += \
 	imx6sx-19x19-arm2-gpmi-weim.dtb
 dtb-$(CONFIG_SOC_IMX6UL) += \
 	imx6ul-14x14-ddr3-arm2.dtb \
-	imx6ul-14x14-ddr3-arm2-emmc.dtb	\
+	imx6ul-14x14-ddr3-arm2-emmc.dtb \
 	imx6ul-14x14-ddr3-arm2-flexcan2.dtb \
 	imx6ul-14x14-ddr3-arm2-gpmi-weim.dtb \
 	imx6ul-14x14-ddr3-arm2-mqs.dtb \
@@ -395,11 +395,11 @@ dtb-$(CONFIG_SOC_IMX6UL) += \
 	imx6ul-var-dart-sd_nand.dtb \
 	imx6ul-var-dart-sd_emmc.dtb \
 	imx6ul-var-som-5g-emmc_wifi.dtb \
-        imx6ul-var-som-5g-nand_wifi.dtb \
-        imx6ul-var-som-emmc_wifi.dtb \
-        imx6ul-var-som-nand_wifi.dtb \
-        imx6ul-var-som-sd_emmc.dtb \
-        imx6ul-var-som-sd_nand.dtb
+	imx6ul-var-som-5g-nand_wifi.dtb \
+	imx6ul-var-som-emmc_wifi.dtb \
+	imx6ul-var-som-nand_wifi.dtb \
+	imx6ul-var-som-sd_emmc.dtb \
+	imx6ul-var-som-sd_nand.dtb
 dtb-$(CONFIG_SOC_IMX6ULL) += \
 	imx6ull-14x14-ddr3-arm2.dtb \
 	imx6ull-14x14-ddr3-arm2-adc.dtb \
@@ -430,18 +430,18 @@ dtb-$(CONFIG_SOC_IMX6ULL) += \
 	imx6ull-var-dart-5g-emmc_wifi.dtb \
 	imx6ull-var-dart-sd_nand.dtb \
 	imx6ull-var-dart-sd_emmc.dtb \
+	imx6ull-var-som-5g-emmc_wifi.dtb \
+	imx6ull-var-som-5g-nand_wifi.dtb \
+	imx6ull-var-som-emmc_wifi.dtb \
+	imx6ull-var-som-nand_wifi.dtb \
+	imx6ull-var-som-sd_emmc.dtb \
+	imx6ull-var-som-sd_nand.dtb \
 	imx6ulz-var-dart-nand_wifi.dtb \
 	imx6ulz-var-dart-5g-nand_wifi.dtb \
 	imx6ulz-var-dart-emmc_wifi.dtb \
 	imx6ulz-var-dart-5g-emmc_wifi.dtb \
 	imx6ulz-var-dart-sd_nand.dtb \
-	imx6ulz-var-dart-sd_emmc.dtb \
-        imx6ull-var-som-5g-emmc_wifi.dtb \
-        imx6ull-var-som-5g-nand_wifi.dtb \
-        imx6ull-var-som-emmc_wifi.dtb \
-        imx6ull-var-som-nand_wifi.dtb \
-        imx6ull-var-som-sd_emmc.dtb \
-        imx6ull-var-som-sd_nand.dtb
+	imx6ulz-var-dart-sd_emmc.dtb
 dtb-$(CONFIG_SOC_IMX7D) += \
 	imx7d-12x12-lpddr3-arm2.dtb \
 	imx7d-12x12-lpddr3-arm2-m4.dtb \
