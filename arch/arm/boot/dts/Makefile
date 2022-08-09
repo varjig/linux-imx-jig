@@ -441,7 +441,13 @@ dtb-$(CONFIG_SOC_IMX6ULL) += \
 	imx6ulz-var-dart-emmc_wifi.dtb \
 	imx6ulz-var-dart-5g-emmc_wifi.dtb \
 	imx6ulz-var-dart-sd_nand.dtb \
-	imx6ulz-var-dart-sd_emmc.dtb
+	imx6ulz-var-dart-sd_emmc.dtb \
+	imx6ulz-var-som-5g-emmc_wifi.dtb \
+	imx6ulz-var-som-5g-nand_wifi.dtb \
+	imx6ulz-var-som-emmc_wifi.dtb \
+	imx6ulz-var-som-nand_wifi.dtb \
+	imx6ulz-var-som-sd_emmc.dtb \
+	imx6ulz-var-som-sd_nand.dtb
 dtb-$(CONFIG_SOC_IMX7D) += \
 	imx7d-12x12-lpddr3-arm2.dtb \
 	imx7d-12x12-lpddr3-arm2-m4.dtb \
