@@ -365,10 +365,11 @@ static void pcie_reset(int reset_gpio)
 {
 	/* Some boards don't have PCIe reset GPIO. */
 	if (gpio_is_valid(reset_gpio)) {
+		printk("Reset PCI Device\n");
 		gpio_set_value_cansleep(reset_gpio, 0);
-		mdelay(20);
+		mdelay(40);
 		gpio_set_value_cansleep(reset_gpio, 1);
-		mdelay(20);
+		mdelay(200);
 	}
 }
 
@@ -587,13 +588,16 @@ static void imx6_pcie_init_phy(struct pcie_port *pp)
 
 static int imx6_pcie_wait_for_link(struct pcie_port *pp)
 {
-	int count = 20000;
+	int count = 20;
 	struct imx6_pcie *imx6_pcie = to_imx6_pcie(pp);
 
 	while (!dw_pcie_link_up(pp)) {
-		udelay(10);
+		udelay(100);
 		if (--count)
+		{
+			pcie_reset(imx6_pcie->reset_gpio);
 			continue;
+		}
 
 		dev_err(pp->dev, "phy link never came up\n");
 		dev_dbg(pp->dev, "DEBUG_R0: 0x%08x, DEBUG_R1: 0x%08x\n",
