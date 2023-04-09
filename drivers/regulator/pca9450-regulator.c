@@ -1087,12 +1087,12 @@ static int pca9450_i2c_probe(struct i2c_client *i2c,
 		reset_ctrl = WDOG_B_CFG_COLD_LDO12;
 
 	/* Set reset behavior on assertion of WDOG_B signal */
-	ret = regmap_update_bits(pca9450->regmap, PCA9450_REG_RESET_CTRL,
-				 WDOG_B_CFG_MASK, reset_ctrl);
+	/*ret = regmap_update_bits(pca9450->regmap, PCA9450_REG_RESET_CTRL,
+				WDOG_B_CFG_MASK, reset_ctrl);
 	if (ret) {
 		dev_err(&i2c->dev, "Failed to set WDOG_B reset behavior\n");
 		return ret;
-	}
+	}*/
 
 	if (of_property_read_bool(i2c->dev.of_node, "nxp,i2c-lt-enable")) {
 		/* Enable I2C Level Translator */
