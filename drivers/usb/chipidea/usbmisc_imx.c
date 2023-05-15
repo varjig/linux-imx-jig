@@ -854,7 +854,7 @@ static int imx7d_charger_detection(struct imx_usbmisc_data *data)
 	/* Check if vbus is valid */
 	val = readl(usbmisc->base + MX7D_USB_OTG_PHY_STATUS);
 	if (!(val & MX7D_USB_OTG_PHY_STATUS_VBUS_VLD)) {
-		dev_err(data->dev, "vbus is error\n");
+		//dev_err(data->dev, "vbus is error\n");
 		return -EINVAL;
 	}
 
@@ -1146,9 +1146,9 @@ int imx_usbmisc_charger_detection(struct imx_usbmisc_data *data, bool connect)
 	if (connect) {
 		ret = usbmisc->ops->charger_detection(data);
 		if (ret) {
-			dev_err(data->dev,
-					"Error occurs during detection: %d\n",
-					ret);
+//			dev_err(data->dev,
+//					"Error occurs during detection: %d\n",
+//					ret);
 			usb_phy->chg_state = USB_CHARGER_ABSENT;
 		} else {
 			usb_phy->chg_state = USB_CHARGER_PRESENT;
