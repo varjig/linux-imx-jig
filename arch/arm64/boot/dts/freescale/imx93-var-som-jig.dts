@@ -9,7 +9,7 @@
 #include "imx93-var-som.dtsi"
 
 / {
-	model = "Variscite VAR-SOM-MX93 on Symphony-Board";
+	model = "Variscite VAR-SOM-MX93 on JIG Adapter";
 
 	aliases {
 		gpio4 = &pca9534;
@@ -28,8 +28,9 @@
 		status="disable";
 	};
 
-	lvds_panel {
-		compatible = "sgd,gktw70sdae4se", "panel-lvds";
+#if 0
+	panel-dsi {
+		compatible = "panel-lvds";
 		width-mm = <153>;
 		height-mm = <87>;
 		label = "gktw70sdae4se";
@@ -49,6 +50,39 @@
 			hsync-active = <0>;
 			vsync-active = <0>;
 			de-active = <1>;
+			pixelclk-active = <0>;
+		};
+
+		port {
+			panel_in_bridge: endpoint {
+				remote-endpoint = <&panel_dsi_in>;
+			};
+		};
+	};
+#endif
+
+	lvds_panel {
+		compatible = "sgd,gktw70sdae4se", "panel-lvds";
+		width-mm = <153>;
+		height-mm = <87>;
+		label = "gktw70sdae4se";
+		data-mapping = "vesa-24";
+		status = "okay";
+		
+		panel-timing {
+			clock-frequency = <33000000>;
+			hactive = <800>;
+			vactive = <480>;
+			hback-porch = <40>;
+			hfront-porch = <40>;
+			vback-porch = <29>;
+			vfront-porch = <13>;
+			hsync-len = <48>;
+			vsync-len = <3>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <1>;
+			pixelclk-active = <0>;
 		};
 
 		port {
@@ -57,7 +91,6 @@
 			};
 		};
 	};
-
 
 	reg_usdhc2_vmmc: regulator-usdhc2 {
 		compatible = "regulator-fixed";
@@ -154,6 +187,7 @@
 	
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
+			MX93_PAD_WDOG_ANY__GPIO1_IO15			0x400011FE
 			MX93_PAD_GPIO_IO26__GPIO2_IO26			0x400011FE
 			MX93_PAD_GPIO_IO21__GPIO2_IO21			0x400011FE
 			MX93_PAD_PDM_CLK__GPIO1_IO08			0x400011FE
@@ -225,21 +259,49 @@
 
 	pinctrl_usdhc2: usdhc2grp {
 		fsl,pins = <
-			MX93_PAD_SD2_CLK__USDHC2_CLK		0x5fe
-			MX93_PAD_SD2_CMD__USDHC2_CMD		0x3fe
-			MX93_PAD_SD2_DATA0__USDHC2_DATA0	0x3fe
-			MX93_PAD_SD2_DATA1__USDHC2_DATA1	0x3fe
-			MX93_PAD_SD2_DATA2__USDHC2_DATA2	0x3fe
-			MX93_PAD_SD2_DATA3__USDHC2_DATA3	0x3fe
+			MX93_PAD_SD2_CLK__USDHC2_CLK		0x15fe
+			MX93_PAD_SD2_CMD__USDHC2_CMD		0x13fe
+			MX93_PAD_SD2_DATA0__USDHC2_DATA0	0x13fe
+			MX93_PAD_SD2_DATA1__USDHC2_DATA1	0x13fe
+			MX93_PAD_SD2_DATA2__USDHC2_DATA2	0x13fe
+			MX93_PAD_SD2_DATA3__USDHC2_DATA3	0x13fe
 			MX93_PAD_SD2_VSELECT__USDHC2_VSELECT	0x51e
+		>;
+	};
+
+	pinctrl_lpspi8: lpspi8grp {
+		fsl,pins = <
+			MX93_PAD_GPIO_IO12__LPSPI8_PCS0			0x31e
+			MX93_PAD_GPIO_IO13__LPSPI8_SIN			0x31e
+			MX93_PAD_GPIO_IO14__LPSPI8_SOUT			0x31e
+			MX93_PAD_GPIO_IO15__LPSPI8_SCK			0x31e
 		>;
 	};
 };
 
 &lcdif {
 	status = "okay";
-	assigned-clock-rates = <498000000>, <71142857>, <400000000>, <133333333>;
+	assigned-clock-rates = <484000000>, <121000000>, <400000000>, <133333333>;
 };
+
+#if 0
+&dsi {
+	status = "okay";
+	ports {
+		port@1 {
+			reg = <1>;
+			dsi_out: endpoint {
+				remote-endpoint = <&bridge_in_dsi>;
+			};
+		};
+	};
+};
+
+
+&dphy {
+	status = "okay";
+};
+#endif
 
 &ldb {
 	status = "okay";
@@ -261,22 +323,6 @@
 	status = "okay";
 };
 
-&dsi {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	status = "okay";
-
-	ports {
-		port@1 {
-			reg = <1>;
-			dsi_out: endpoint {
-				remote-endpoint = <&lvds_in>;
-				attach-bridge;
-			};
-		};
-	};
-};
-
 &lpi2c5 {
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -295,48 +341,65 @@
 		reg = <0x20>;
 		gpio-controller;
 		#gpio-cells = <2>;
-	};
 
+#if 0
+		dsi_test_hog {
+			gpio-hog;
+			gpios = <0 0>;
+			output-high;
+			line-name = "dsi_test_en";
+		};
+
+		dsim_disable_hog {
+			gpio-hog;
+			gpios = <1 0>;
+			output-low;
+			line-name = "dsi_test_en";
+		};
+
+		dsi_bridge_hog {
+			gpio-hog;
+			gpios = <6 0>;
+			output-high;
+			line-name = "dsi_brg_en";
+		};
+#endif
+	};
+	
+#if 0
 	dsi_lvds_bridge: sn65dsi84@2c {
-		compatible = "ti,sn65dsi83";
+		compatible = "ti,sn65dsi84";
 		reg = <0x2c>;
-		ti,dsi-lanes = <4>;
-		ti,lvds-format = <1>;
-		ti,lvds-bpp = <24>;
-		ti,lvds-channels = <1>;
-		ti,width-mm = <154>;
-		ti,height-mm = <87>;
-		enable-gpios = <&pca9534 2 GPIO_ACTIVE_HIGH>;
+		enable-gpios = <&gpio4 20 GPIO_ACTIVE_HIGH>;
 		status = "okay";
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
 
-		display-timings {
-			lvds {
-				clock-frequency = <33000000>;
-				hactive = <800>;
-				vactive = <480>;
-				hback-porch = <40>;
-				hfront-porch = <40>;
-				vback-porch = <29>;
-				vfront-porch = <13>;
-				hsync-len = <48>;
-				vsync-len = <3>;
-				hsync-active = <0>;
-				vsync-active = <0>;
-				de-active = <1>;
-				pixelclk-active = <0>;
+			port@0 {
+				reg = <0>;
+
+				bridge_in_dsi:endpoint {
+					remote-endpoint = <&dsi_out>;
+					data-lanes = <1 2 3 4>;
+				};
 			};
-		};
 
-		port {
-			lvds_in: endpoint {
-				remote-endpoint = <&dsi_out>;
+			port@2 {
+				reg = <2>;
+
+				panel_dsi_in:endpoint {
+					remote-endpoint = <&panel_in_bridge>;
+				};
 			};
 		};
 	};
-
+#endif
+	
 	ov5640: camera@3c {
 		compatible = "ovti,ov5640";
 		reg = <0x3c>;
+		status = "disabled";
 
 		clocks = <&clk_ov5640_fixed>;
 		clock-names = "xclk";
@@ -357,11 +420,11 @@
 };
 
 &mu1 {
-	status = "disabled";
+	status = "okay";
 };
 
 &mu2 {
-	status = "disabled";
+	status = "okay";
 };
 
 &usbotg1 {
@@ -383,13 +446,18 @@
 	pinctrl-2 = <&pinctrl_usdhc2>;
 	
 	vmmc-supply = <&reg_usdhc2_vmmc>;
-	non-removable;
+	broken-cd;
 	bus-width = <4>;
 	status = "okay";
-	no-sdio;
 	no-mmc;
+	ni-sdio;
 };
 
 &ele_mu {
-	status = "disabled";
+	status = "okay";
+};
+
+&lpspi8 {
+	cs-gpios = <0>;
+	num-cs = <1>;
 };
