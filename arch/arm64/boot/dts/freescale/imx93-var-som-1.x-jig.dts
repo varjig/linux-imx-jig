@@ -5,9 +5,9 @@
 
 /dts-v1/;
 
-#include "imx93-var-som.dtsi"
+#include "imx93-var-som-1.x.dtsi"
 #include "imx93-var-som-jig.dtsi"
 
 / {
-	model = "Variscite VAR-SOM-MX93 2.x and newer on JIG Adapter";
+	model = "Variscite VAR-SOM-MX93 1.x on JIG Adapter";
 };
