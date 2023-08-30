@@ -461,6 +461,11 @@
 	status = "okay";
 };
 
+&lpm {
+	soc-supply = <&buck1>;
+	status = "okay";
+};
+
 &lpspi8 {
 	cs-gpios = <0>;
 	num-cs = <1>;
