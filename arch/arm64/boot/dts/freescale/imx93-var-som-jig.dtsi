@@ -450,6 +450,12 @@
 	ni-sdio;
 };
 
+/* WiFi */
+&usdhc3 {
+	fsl,tuning-start-tap = <28>;
+	fsl,tuning-step= <1>;
+};
+
 &ele_mu {
 	status = "okay";
 };
@@ -462,4 +468,9 @@
 &lpspi8 {
 	cs-gpios = <0>;
 	num-cs = <1>;
+};
+
+&ads7846_ts {
+	ti,debounce-tol = /bits/ 16 <300>;
+	ti,debounce-rep = /bits/ 16 <5>;
 };
