@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2019 NXP
+ * Copyright 2024 Variscite Ltd.
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/usb/pd.h>
+#include "imx8mp-var-som-1.x.dtsi"
+#include "imx8mp-var-som-jig.dtsi"
+
+/ {
+	model = "Variscite VAR-SOM-MX8M-PLUS-1.x-JIG";
+};
