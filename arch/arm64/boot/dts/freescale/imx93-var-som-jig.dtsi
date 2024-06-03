@@ -156,7 +156,8 @@
 	clk_ov5640_fixed: clock {
 		#clock-cells = <0>;
 		compatible = "fixed-clock";
-		clock-frequency = <12000000>;
+		clock-frequency = <24000000>;
+		status = "okay";
 	};
 };
 
@@ -168,6 +169,10 @@
 /* Use external instead of internal RTC*/
 &bbnsm_rtc {
 	status = "disabled";
+};
+
+&cameradev {
+	status = "okay";
 };
 
 &ele_mu {
@@ -303,6 +308,14 @@
 	};
 };
 
+&isi_0 {
+	status = "okay";
+
+	cap_device {
+		status = "okay";
+	};
+};
+
 &lcdif {
 	status = "okay";
 	assigned-clock-rates = <484000000>, <121000000>, <400000000>, <133333333>;
@@ -366,6 +379,13 @@
 		gpio-controller;
 		#gpio-cells = <2>;
 
+		cam_en_hog {
+			gpio-hog;
+			gpios = <3 0>;
+			output-high;
+			line-name = "cam_en";
+		};
+
 #if 0
 		dsi_test_hog {
 			gpio-hog;
@@ -419,21 +439,27 @@
 		};
 	};
 #endif
-	
-	ov5640: camera@3c {
+
+	ov5640_mipi0: ov5640_mipi@3c {
 		compatible = "ovti,ov5640";
 		reg = <0x3c>;
-		status = "disabled";
-
 		clocks = <&clk_ov5640_fixed>;
 		clock-names = "xclk";
-
+		assigned-clock-rates = <24000000>;
 		csi_id = <0>;
 		mclk = <24000000>;
 		mclk_source = <0>;
 		mipi_csi;
+		status = "okay";
+
+		port {
+			ov5640_mipi_0_ep: endpoint {
+				remote-endpoint = <&mipi_csi_ep>;
+				data-lanes = <1 2>;
+				bus-type = <4>;
+			};
+		};
 	};
-	
 };
 
 /* Console */
@@ -490,8 +516,29 @@
 	cs-gpios = <0>;
 	num-cs = <1>;
 };
+&media_blk_ctrl {
+	status = "okay";
+};
 
 &ads7846_ts {
        ti,debounce-tol = /bits/ 16 <300>;
        ti,debounce-rep = /bits/ 16 <5>;
 };
+
+&mipi_csi {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	port@0 {
+		reg = <0>;
+		mipi_csi_ep: endpoint {
+			remote-endpoint = <&ov5640_mipi_0_ep>;
+			data-lanes = <2>;
+			cfg-clk-range = <28>;
+			hs-clk-range = <0x32>;
+			bus-type = <4>;
+		};
+	};
+};
+
