@@ -22,39 +22,6 @@
 		status="disable";
 	};
 
-#if 0
-	panel-dsi {
-		compatible = "panel-lvds";
-		width-mm = <153>;
-		height-mm = <87>;
-		label = "gktw70sdae4se";
-		data-mapping = "vesa-24";
-		status = "okay";
-
-		panel-timing {
-			clock-frequency = <33000000>;
-			hactive = <800>;
-			vactive = <480>;
-			hback-porch = <40>;
-			hfront-porch = <40>;
-			vback-porch = <29>;
-			vfront-porch = <13>;
-			hsync-len = <48>;
-			vsync-len = <3>;
-			hsync-active = <0>;
-			vsync-active = <0>;
-			de-active = <1>;
-			pixelclk-active = <0>;
-		};
-
-		port {
-			panel_in_bridge: endpoint {
-				remote-endpoint = <&panel_dsi_in>;
-			};
-		};
-	};
-#endif
-
 	lvds_panel {
 		compatible = "sgd,gktw70sdae4se", "panel-lvds";
 		width-mm = <153>;
@@ -64,15 +31,15 @@
 		status = "okay";
 		
 		panel-timing {
-			clock-frequency = <33000000>;
+			clock-frequency = <30250000>;
 			hactive = <800>;
 			vactive = <480>;
-			hback-porch = <40>;
 			hfront-porch = <40>;
-			vback-porch = <29>;
-			vfront-porch = <13>;
 			hsync-len = <48>;
+			hback-porch = <40>;
+			vfront-porch = <13>;
 			vsync-len = <3>;
+			vback-porch = <29>;
 			hsync-active = <0>;
 			vsync-active = <0>;
 			de-active = <1>;
@@ -321,24 +288,44 @@
 	assigned-clock-rates = <484000000>, <121000000>, <400000000>, <133333333>;
 };
 
-#if 0
 &dsi {
-	status = "okay";
-	ports {
-		port@1 {
-			reg = <1>;
-			dsi_out: endpoint {
-				remote-endpoint = <&bridge_in_dsi>;
-			};
-		};
-	};
-};
+        #address-cells = <1>;
+        #size-cells = <0>;
+        status = "okay";
 
+        panel@0 {
+                compatible = "raydium,rm67199";
+                reg = <0>;
+                dsi-lanes = <4>;
+                video-mode = <2>;       /* 0: burst mode
+                                         * 1: non-burst mode with sync event
+                                         * 2: non-burst mode with sync pulse
+                                         */
+                width-mm = <68>;
+                height-mm = <121>;
+                status = "okay";
+
+                port {
+                        panel_in: endpoint {
+                                remote-endpoint = <&dsi_out>;
+                        };
+                };
+        };
+
+        ports {
+                port@1 {
+                        reg = <1>;
+
+                        dsi_out: endpoint {
+                                remote-endpoint = <&panel_in>;
+                        };
+                };
+        };
+};
 
 &dphy {
-	status = "okay";
+        status = "okay";
 };
-#endif
 
 &ldb {
 	status = "okay";
@@ -385,61 +372,8 @@
 			output-high;
 			line-name = "cam_en";
 		};
-
-#if 0
-		dsi_test_hog {
-			gpio-hog;
-			gpios = <0 0>;
-			output-high;
-			line-name = "dsi_test_en";
-		};
-
-		dsim_disable_hog {
-			gpio-hog;
-			gpios = <1 0>;
-			output-low;
-			line-name = "dsi_test_en";
-		};
-
-		dsi_bridge_hog {
-			gpio-hog;
-			gpios = <6 0>;
-			output-high;
-			line-name = "dsi_brg_en";
-		};
-#endif
 	};
 	
-#if 0
-	dsi_lvds_bridge: sn65dsi84@2c {
-		compatible = "ti,sn65dsi84";
-		reg = <0x2c>;
-		enable-gpios = <&gpio4 20 GPIO_ACTIVE_HIGH>;
-		status = "okay";
-		ports {
-			#address-cells = <1>;
-			#size-cells = <0>;
-
-			port@0 {
-				reg = <0>;
-
-				bridge_in_dsi:endpoint {
-					remote-endpoint = <&dsi_out>;
-					data-lanes = <1 2 3 4>;
-				};
-			};
-
-			port@2 {
-				reg = <2>;
-
-				panel_dsi_in:endpoint {
-					remote-endpoint = <&panel_in_bridge>;
-				};
-			};
-		};
-	};
-#endif
-
 	ov5640_mipi0: ov5640_mipi@3c {
 		compatible = "ovti,ov5640";
 		reg = <0x3c>;
@@ -541,4 +475,3 @@
 		};
 	};
 };
-

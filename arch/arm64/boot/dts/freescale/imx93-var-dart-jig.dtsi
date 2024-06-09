@@ -22,39 +22,6 @@
 		status="disable";
 	};
 
-#if 0
-	panel-dsi {
-		compatible = "panel-lvds";
-		width-mm = <153>;
-		height-mm = <87>;
-		label = "gktw70sdae4se";
-		data-mapping = "vesa-24";
-		status = "okay";
-
-		panel-timing {
-			clock-frequency = <33000000>;
-			hactive = <800>;
-			vactive = <480>;
-			hback-porch = <40>;
-			hfront-porch = <40>;
-			vback-porch = <29>;
-			vfront-porch = <13>;
-			hsync-len = <48>;
-			vsync-len = <3>;
-			hsync-active = <0>;
-			vsync-active = <0>;
-			de-active = <1>;
-			pixelclk-active = <0>;
-		};
-
-		port {
-			panel_in_bridge: endpoint {
-				remote-endpoint = <&panel_dsi_in>;
-			};
-		};
-	};
-#endif
-
 	lvds_panel {
 		compatible = "sgd,gktw70sdae4se", "panel-lvds";
 		width-mm = <153>;
@@ -64,15 +31,15 @@
 		status = "okay";
 		
 		panel-timing {
-			clock-frequency = <33000000>;
+			clock-frequency = <30250000>;
 			hactive = <800>;
 			vactive = <480>;
-			hback-porch = <40>;
 			hfront-porch = <40>;
-			vback-porch = <29>;
-			vfront-porch = <13>;
 			hsync-len = <48>;
+			hback-porch = <40>;
+			vfront-porch = <13>;
 			vsync-len = <3>;
+			vback-porch = <29>;
 			hsync-active = <0>;
 			vsync-active = <0>;
 			de-active = <1>;
@@ -153,7 +120,8 @@
 	clk_ov5640_fixed: clock {
 		#clock-cells = <0>;
 		compatible = "fixed-clock";
-		clock-frequency = <12000000>;
+		clock-frequency = <24000000>;
+		status = "okay";
 	};
 };
 
@@ -165,6 +133,10 @@
 /* Use external instead of internal RTC*/
 &bbnsm_rtc {
 	status = "disabled";
+};
+
+&cameradev {
+	status = "okay";
 };
 
 &ele_mu {
@@ -312,29 +284,57 @@
 	};
 };
 
+&isi_0 {
+	status = "okay";
+
+	cap_device {
+		status = "okay";
+	};
+};
+
 &lcdif {
 	status = "okay";
 	assigned-clock-rates = <484000000>, <121000000>, <400000000>, <133333333>;
 };
 
-#if 0
 &dsi {
-	status = "okay";
-	ports {
-		port@1 {
-			reg = <1>;
-			dsi_out: endpoint {
-				remote-endpoint = <&bridge_in_dsi>;
-			};
-		};
-	};
-};
+        #address-cells = <1>;
+        #size-cells = <0>;
+        status = "okay";
 
+        panel@0 {
+                compatible = "raydium,rm67199";
+                reg = <0>;
+                dsi-lanes = <4>;
+                video-mode = <2>;       /* 0: burst mode
+                                         * 1: non-burst mode with sync event
+                                         * 2: non-burst mode with sync pulse
+                                         */
+                width-mm = <68>;
+                height-mm = <121>;
+                status = "okay";
+
+                port {
+                        panel_in: endpoint {
+                                remote-endpoint = <&dsi_out>;
+                        };
+                };
+        };
+
+        ports {
+                port@1 {
+                        reg = <1>;
+
+                        dsi_out: endpoint {
+                                remote-endpoint = <&panel_in>;
+                        };
+                };
+        };
+};
 
 &dphy {
-	status = "okay";
+        status = "okay";
 };
-#endif
 
 &ldb {
 	status = "okay";
@@ -376,20 +376,26 @@
 		#gpio-cells = <2>;
 	};
 	
-	ov5640: camera@3c {
+	ov5640_mipi0: ov5640_mipi@3c {
 		compatible = "ovti,ov5640";
 		reg = <0x3c>;
-		status = "disabled";
-
 		clocks = <&clk_ov5640_fixed>;
 		clock-names = "xclk";
-
+		assigned-clock-rates = <24000000>;
 		csi_id = <0>;
 		mclk = <24000000>;
 		mclk_source = <0>;
 		mipi_csi;
+		status = "okay";
+
+		port {
+			ov5640_mipi_0_ep: endpoint {
+				remote-endpoint = <&mipi_csi_ep>;
+				data-lanes = <1 2>;
+				bus-type = <4>;
+			};
+		};
 	};
-	
 };
 
 &lpi2c5 {
@@ -459,4 +465,24 @@
 &lpspi8 {
 	cs-gpios = <0>;
 	num-cs = <1>;
+};
+&media_blk_ctrl {
+	status = "okay";
+};
+
+&mipi_csi {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	port@0 {
+		reg = <0>;
+		mipi_csi_ep: endpoint {
+			remote-endpoint = <&ov5640_mipi_0_ep>;
+			data-lanes = <2>;
+			cfg-clk-range = <28>;
+			hs-clk-range = <0x32>;
+			bus-type = <4>;
+		};
+	};
 };

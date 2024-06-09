@@ -17,8 +17,7 @@
 		compatible = "mmc-pwrseq-simple";
 		post-power-on-delay-ms = <100>;
 		power-off-delay-us = <10000>;
-		reset-gpios = <&gpio4 14 GPIO_ACTIVE_LOW>,	/* WIFI_RESET */
-			      <&gpio3 7 GPIO_ACTIVE_LOW>;	/* WIFI_PWR_EN */
+		reset-gpios = <&gpio3 7 GPIO_ACTIVE_LOW>;	/* WIFI_PWR_EN */
 		status = "okay";
 	};
 
