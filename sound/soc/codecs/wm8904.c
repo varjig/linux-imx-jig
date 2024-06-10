@@ -1863,7 +1863,7 @@ static int wm8904_set_bias_level(struct snd_soc_codec *codec,
 
 			ret = clk_prepare_enable(wm8904->mclk);
 			if (ret) {
-				dev_err(component->dev,
+				dev_err(codec->dev,
 					"Failed to enable MCLK: %d\n", ret);
 				regulator_bulk_disable(ARRAY_SIZE(wm8904->supplies),
 						       wm8904->supplies);
