@@ -6,10 +6,10 @@
  * published by the Free Software Foundation.
  */
 
-#include "imx6ull-var-dart-sd_emmc.dts"
+#include "imx6ull-var-dart-sd_emmc-wm8731.dts"
 #include "imx6ull_to_imx6ulz.dtsi"
 
 / {
-	model = "Variscite i.MX6 ULZ DART EMMC+WM8904";
+	model = "Variscite i.MX6 ULZ DART EMMC+WM8731";
 	compatible = "fsl,imx6ulz-var-dart", "fsl,imx6ulz";
 };

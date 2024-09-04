@@ -12,9 +12,10 @@
 
 #define PHY
 #include "imx6ul-var-dart.dtsi"
-#include "imx6ul-imx6ull-var-dart-wm8904.dtsi"
+#include "imx6ul-imx6ull-var-dart-wm8731.dtsi"
+#include "imx6ul-imx6ull-var-dart-wm8731.dtsi"
 / {
-        model = "Variscite i.MX6 ULL DART eMMC+WM8901+CORNING";
+        model = "Variscite i.MX6 ULL DART eMMC+WM8731+CORNING";
 };
 
 &gpmi {

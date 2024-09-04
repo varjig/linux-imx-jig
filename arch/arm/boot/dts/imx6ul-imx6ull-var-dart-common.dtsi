@@ -128,7 +128,6 @@
 	status = "okay";
 };
 
-#ifdef AC
 &sai2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai2>;
@@ -137,7 +136,6 @@
 	assigned-clock-rates = <0>, <11289600>;
 	status = "okay";
 };
-#endif
 
 /* Console UART */
 &uart1 {
@@ -409,7 +407,6 @@
 			>;
 		};
 		
-#ifdef AC
 		pinctrl_sai2: sai2grp {
 			fsl,pins = <
 				MX6UL_PAD_JTAG_TDI__SAI2_TX_BCLK	0x17088
@@ -419,7 +416,6 @@
 				MX6UL_PAD_JTAG_TMS__CCM_CLKO1		0x17088
 			>;
 		};
-#endif
 	};
 };
 

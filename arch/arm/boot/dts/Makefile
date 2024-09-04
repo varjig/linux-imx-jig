@@ -388,12 +388,15 @@ dtb-$(CONFIG_SOC_IMX6UL) += \
 	imx6ul-9x9-evk-csi.dtb \
 	imx6ul-9x9-evk-ldo.dtb \
 	imx6ul-var-dart-nand_wifi_corning.dtb \
+	imx6ul-var-dart-nand_wifi-wm8731_corning.dtb \
 	imx6ul-var-dart-nand_wifi.dtb \
 	imx6ul-var-dart-5g-nand_wifi.dtb \
 	imx6ul-var-dart-emmc_wifi.dtb \
 	imx6ul-var-dart-5g-emmc_wifi.dtb \
 	imx6ul-var-dart-sd_nand.dtb \
+        imx6ul-var-dart-sd_nand-wm8731.dtb \
 	imx6ul-var-dart-sd_emmc.dtb \
+        imx6ul-var-dart-sd_emmc-wm8731.dtb \
 	imx6ul-var-som-5g-emmc_wifi.dtb \
 	imx6ul-var-som-5g-nand_wifi.dtb \
 	imx6ul-var-som-emmc_wifi.dtb \
@@ -428,8 +431,10 @@ dtb-$(CONFIG_SOC_IMX6ULL) += \
 	imx6ull-var-dart-5g-nand_wifi.dtb \
 	imx6ull-var-dart-emmc_wifi.dtb \
 	imx6ull-var-dart-5g-emmc_wifi.dtb \
-	imx6ull-var-dart-sd_nand.dtb \
-	imx6ull-var-dart-sd_emmc.dtb \
+        imx6ull-var-dart-sd_nand.dtb \
+	imx6ull-var-dart-sd_nand-wm8731.dtb \
+        imx6ull-var-dart-sd_emmc.dtb \
+	imx6ull-var-dart-sd_emmc-wm8731.dtb \
 	imx6ull-var-som-5g-emmc_wifi.dtb \
 	imx6ull-var-som-5g-nand_wifi.dtb \
 	imx6ull-var-som-emmc_wifi.dtb \
@@ -440,8 +445,10 @@ dtb-$(CONFIG_SOC_IMX6ULL) += \
 	imx6ulz-var-dart-5g-nand_wifi.dtb \
 	imx6ulz-var-dart-emmc_wifi.dtb \
 	imx6ulz-var-dart-5g-emmc_wifi.dtb \
-	imx6ulz-var-dart-sd_nand.dtb \
-	imx6ulz-var-dart-sd_emmc.dtb \
+        imx6ulz-var-dart-sd_nand.dtb \
+	imx6ulz-var-dart-sd_nand-wm8731.dtb \
+        imx6ulz-var-dart-sd_emmc.dtb \
+	imx6ulz-var-dart-sd_emmc-wm8731.dtb \
 	imx6ulz-var-som-5g-emmc_wifi.dtb \
 	imx6ulz-var-som-5g-nand_wifi.dtb \
 	imx6ulz-var-som-emmc_wifi.dtb \

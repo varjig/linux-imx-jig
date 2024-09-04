@@ -5,11 +5,14 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-/* NAND & WI-FI devices enabled eMMC & SDCARD disabled.*/
-#define WIFI
-#define WIFI_5G
-/* #define EMMC */
-#define  NAND
+/* SDCARD & eMMC devices enabled NAND & Wi-FI disabled.*/
+/* #define WIFI */
+#define EMMC
+/* #define  NAND */
 #define PHY
-#include "imx6ul-var-dart.dtsi"
-#include "imx6ul-imx6ull-var-dart-wm8904.dtsi"
+#include "imx6ull-var-dart.dtsi"
+#include "imx6ul-imx6ull-var-dart-wm8731.dtsi"
+/ {
+        model = "Variscite i.MX6 ULL DART eMMC+WM8731";
+};
+

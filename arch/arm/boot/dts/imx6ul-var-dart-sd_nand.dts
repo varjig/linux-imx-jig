@@ -9,6 +9,10 @@
 /* #define WIFI */
 /* #define EMMC */
 #define  NAND
-#define AC
 #define PHY
 #include "imx6ul-var-dart.dtsi"
+#include "imx6ul-imx6ull-var-dart-wm8904.dtsi"
+/ {
+        model = "Variscite i.MX6 UL DART NAND+WM8904";
+};
+

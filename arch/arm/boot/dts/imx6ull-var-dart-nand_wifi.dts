@@ -9,6 +9,6 @@
 #define WIFI
 /* #define EMMC */
 #define  NAND
-#define AC
 #define PHY
 #include "imx6ull-var-dart.dtsi"
+#include "imx6ul-imx6ull-var-dart-wm8904.dtsi"

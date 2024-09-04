@@ -1837,7 +1837,6 @@ static int wm8904_set_bias_level(struct snd_soc_codec *codec,
 
 	switch (level) {
 	case SND_SOC_BIAS_ON:
-		clk_prepare_enable(wm8904->mclk);
 		break;
 
 	case SND_SOC_BIAS_PREPARE:
@@ -1859,6 +1858,15 @@ static int wm8904_set_bias_level(struct snd_soc_codec *codec,
 				dev_err(codec->dev,
 					"Failed to enable supplies: %d\n",
 					ret);
+				return ret;
+			}
+
+			ret = clk_prepare_enable(wm8904->mclk);
+			if (ret) {
+				dev_err(codec->dev,
+					"Failed to enable MCLK: %d\n", ret);
+				regulator_bulk_disable(ARRAY_SIZE(wm8904->supplies),
+						       wm8904->supplies);
 				return ret;
 			}
 
@@ -2306,3 +2314,4 @@ module_i2c_driver(wm8904_i2c_driver);
 MODULE_DESCRIPTION("ASoC WM8904 driver");
 MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
 MODULE_LICENSE("GPL");
+
