@@ -5,11 +5,9 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-
 #include "imx6ull-var-dart-sd_nand.dts"
 #include "imx6ull_to_imx6ulz.dtsi"
-
 / {
-	model = "Variscite i.MX6 ULZ DART NAND+WM8904";
+	model = "Variscite i.MX6ULZ DART/NAND/SD/WM8904";
 	compatible = "fsl,imx6ulz-var-dart", "fsl,imx6ulz";
 };

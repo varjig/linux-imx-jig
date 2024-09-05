@@ -7,10 +7,11 @@
  */
 #define WIFI
 #define WIFI_5G
-#define  NAND
+#define EMMC
 #define PHY
 #include "imx6ull-var-dart.dtsi"
-#include "imx6ul-imx6ull-var-dart-wm8904.dtsi"
+#include "imx6ul-imx6ull-var-dart-wm8731.dtsi"
 / {
-        model = "Variscite i.MX6ULL DART/NAND/WiFi-5G/WM8904";
+        model = "Variscite i.MX6ULL DART/eMMC/WiFi-5G/WM8731";
 };
+
