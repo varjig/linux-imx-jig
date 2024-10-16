@@ -9,10 +9,10 @@
 #define  NAND
 #define PHY
 #include "imx6ul-var-dart.dtsi"
-#include "imx6ul-var-dart-wifi-iw61x.dtsi"
-#include "imx6ul-imx6ull-var-dart-wm8904.dtsi"
+#include "imx6ul-imx6ull-var-dart-wifi-brcm.dtsi"
+#include "imx6ul-imx6ull-var-dart-wm8731.dtsi"
 / {
-        model = "Variscite i.MX6UL DART/NAND/WiFi-IW61X/WM8904+CORNING";
+        model = "Variscite i.MX6UL DART/NAND/WiFi-BRCM/WM8731+CORNING";
 };
 
 &gpmi {
