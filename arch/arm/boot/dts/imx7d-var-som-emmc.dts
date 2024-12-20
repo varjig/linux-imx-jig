@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Variscite, Ltd. All Rights Reserved
+ * Copyright (C) 2016-2024 Variscite, Ltd. All Rights Reserved
  *
  * Copyright (C) 2015 Freescale Semiconductor, Inc.
  *
@@ -13,7 +13,7 @@
 #include "imx7d-var-som.dtsi"
 
 / {
-	model = "Variscite i.MX7 DUAL Smart Device Board";
+	model = "Variscite VAR-SOM-MX7 with eMMC & WM8904 on VAR-MX7CustomBoard";
 	compatible = "fsl,imx7d-var-som", "fsl,imx7d";
 };
 

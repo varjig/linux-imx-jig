@@ -20,19 +20,19 @@
 
 	sound {
 		compatible = "simple-audio-card";
-		simple-audio-card,name = "wm8731audio";
+		simple-audio-card,name = "wm8904-audio";
 		simple-audio-card,widgets =
+			"Microphone", "Microphone Jack",
 			"Headphone", "Headphone Jack",
-			"Line", "Line Out",
-			"Microphone", "Mic Jack",
-			"Line", "Line In";
+			"Line", "Line In Jack";
 		simple-audio-card,routing =
-			"Headphone Jack", "RHPOUT",
-			"Headphone Jack", "LHPOUT",
-			"LLINEIN", "Line Jack",
-			"RLINEIN", "Line Jack",
-			"MICIN", "Mic Bias",
-			"Mic Bias", "Mic Jack";
+			"Headphone Jack", "HPOUTL",
+			"Headphone Jack", "HPOUTR",
+			"IN2L", "Line In Jack",
+			"IN2R", "Line In Jack",
+			"IN1L", "Microphone Jack",
+			"IN1R", "Microphone Jack";
+		simple-audio-card,mclk-fs = <256>;
 		simple-audio-card,format = "i2s";
 		simple-audio-card,bitclock-master = <&sound_master>;
 		simple-audio-card,frame-master = <&sound_master>;
@@ -43,16 +43,16 @@
 		assigned-clock-parents = <&clks IMX7D_PLL_AUDIO_POST_DIV>;
 		assigned-clock-rates = <0>, <12288000>;
 
-		sound_master: simple-audio-card,cpu {
+		simple-audio-card,cpu {
 			sound-dai = <&sai1 0>;
-			system-clock-direction = "out";
+			system-clock-direction = "in";
 		};
 
-		simple-audio-card,codec {
-			sound-dai = <&wm8731>;
-			system-clock-type = "mclk";
+		sound_master: simple-audio-card,codec {
+			sound-dai = <&wm8904>;
+			system-clock-type = "wm8904,mclk";
 			system-clock-frequency = <12288000>;
-			system-clock-direction = "in";
+			system-clock-direction = "out";
 		};
 	};
 
@@ -297,9 +297,9 @@
 	pinctrl-0 = <&pinctrl_i2c2>;
 	status = "okay";
 
-	wm8731: wm8731@1a {
+	wm8904: wm8904@1a {
 		#sound-dai-cells = <0>;
-		compatible = "wlf,wm8731";
+		compatible = "wlf,wm8904";
 		reg = <0x1a>;
 		clocks = <&clks IMX7D_AUDIO_MCLK_ROOT_CLK>;
 		clock-names = "mclk";
