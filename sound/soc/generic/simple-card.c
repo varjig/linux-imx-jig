@@ -256,6 +256,10 @@ asoc_simple_card_sub_parse_of(struct device_node *np,
 			dai->sysclk_id = 1;
 		else if (!strcmp(str, "mclk"))
 			dai->sysclk_id = 2;
+		else if (!strcmp(str, "wm8904,mclk"))
+			dai->sysclk_id = 1;
+		else if (!strcmp(str, "wm8904,fll"))
+			dai->sysclk_id = 2;
 		else
 			return -EINVAL;
 	}
