@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Variscite Ltd. - http://www.variscite.com
+ * Copyright (C) 2015-2025 Variscite Ltd. - http://www.variscite.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -9,6 +9,10 @@
 /* #define WIFI */
 #define EMMC
 /* #define  NAND */
-#define AC
 #define PHY
 #include "imx6ul-var-som.dtsi"
+#include "imx6ul-imx6ull-var-dart-wm8904.dtsi"
+
+/ {
+        model = "Variscite i.MX6 UL VAR-SOM SDCARD/eMMC + WM8904";
+};
