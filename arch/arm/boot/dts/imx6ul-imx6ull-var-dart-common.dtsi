@@ -54,20 +54,6 @@
 			states = <1300000 0x1 1400000 0x0>;
 		};
 	};
-
-#ifdef AC
-	sound {
-		compatible = "fsl,imx-audio-wm8731";
-		model = "wm8731-audio";
-		cpu-dai = <&sai2>;
-		audio-codec = <&codec>;
-		audio-routing =
-			"Headphone Jack",	"LHPOUT",
-			"Headphone Jack",	"RHPOUT",
-			"LLINEIN",		"Line Jack",
-			"RLINEIN",		"Line Jack";
-	};
-#endif
 };
 
 &cpu0 {
@@ -247,16 +233,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c2>;
 	status = "okay";
-	
-#ifdef AC
-	codec: wm8731@1a {
-		compatible = "wlf,wm8731";
-		reg = <0x1a>;
-		clocks = <&clks IMX6UL_CLK_SAI2>;
-		clock-names = "mclk";
-	};
-#endif
-
 };
 
 &iomuxc {
@@ -289,15 +265,7 @@
 				MX6UL_PAD_GPIO1_IO05__GPIO1_IO05	0x1b0b0
 				MX6UL_PAD_UART1_CTS_B__GPIO1_IO18	0x1b0b0
 				MX6UL_PAD_UART1_RTS_B__GPIO1_IO19	0x1b0b0
-/*				
-#ifndef AC
-				MX6UL_PAD_JTAG_TDI__GPIO1_IO13		0x1b0b0
-				MX6UL_PAD_JTAG_TDO__GPIO1_IO12		0x1b0b0
-				MX6UL_PAD_JTAG_TRST_B__GPIO1_IO15	0x1b0b0
-				MX6UL_PAD_JTAG_TCK__GPIO1_IO14		0x1b0b0
-				MX6UL_PAD_JTAG_TMS__GPIO1_IO11		0x1b0b0
-#endif
-*/				>;
+				>;
 		};
 		
 #ifdef PHY
