@@ -12,7 +12,7 @@
 #define  NAND
 #define PHY
 #include "imx6ul-var-som.dtsi"
-#include "imx6ul-imx6ull-var-dart-wm8731.dtsi"
+#include "imx6ul-imx6ull-var-som-wm8731.dtsi"
 
 / {
         model = "Variscite i.MX6 UL VAR-SOM-5G NAND + WM8731 + WIFI";
