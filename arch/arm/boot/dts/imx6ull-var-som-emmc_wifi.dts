@@ -14,5 +14,5 @@
 #include "imx6ul-imx6ull-var-dart-wm8904.dtsi"
 
 / {
-        model = "Variscite i.MX6 ULL VAR-SOM eMMC + WM8904";
+        model = "Variscite i.MX6 ULL VAR-SOM eMMC + WM8904 + WIFI";
 };
