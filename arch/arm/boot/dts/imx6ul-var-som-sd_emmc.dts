@@ -11,7 +11,7 @@
 /* #define  NAND */
 #define PHY
 #include "imx6ul-var-som.dtsi"
-#include "imx6ul-imx6ull-var-dart-wm8904.dtsi"
+#include "imx6ul-imx6ull-var-som-wm8904.dtsi"
 
 / {
         model = "Variscite i.MX6 UL VAR-SOM SDCARD/eMMC + WM8904";
