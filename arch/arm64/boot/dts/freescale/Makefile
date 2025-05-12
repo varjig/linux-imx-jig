@@ -614,6 +614,9 @@ dtb-$(CONFIG_ARCH_MXC) += imx91-var-dart-dt8mcustomboard-ld.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx91-var-dart-sonata-ld.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx91-var-som-symphony-ld.dtb
 
+dtb-$(CONFIG_ARCH_MXC) += imx91-var-som-jig.dtb \
+			  imx91-var-dart-jig.dtb
+
 dtb-$(CONFIG_ARCH_MXC) += imx95-15x15-evk.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx95-15x15-evk-flexspi-m2.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx95-15x15-evk-mqs.dtb
