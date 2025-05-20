@@ -406,7 +406,7 @@
 /* BT module */
 &lpuart5 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart5>, <&pinctrl_bt>;
+	pinctrl-0 = <&pinctrl_uart5>;
 	uart-has-rtscts;
 	status = "okay";
 
