@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2023 Variscite Ltd.
+ */
+
+/dts-v1/;
+
+#include "imx95-var-dart.dtsi"
+#include "imx95-var-dart-jig.dtsi"
+
+/ {
+	model = "Variscite DART-MX95 1.x and newer on JIG Adapter";
+};
