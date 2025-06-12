@@ -869,6 +869,10 @@ dtb-$(CONFIG_ARCH_MXC) += imx95-19x19-evk-rpmsg.dtb imx95-19x19-evk-rpmsg-lpv.dt
 imx95-19x19-verdin-rm692c9-dtbs := imx95-19x19-verdin.dtb imx95-19x19-verdin-rm692c9.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx95-19x19-verdin-rm692c9.dtb
 
+DTC_FLAGS_imx95-var-dart-jig-eth0 := -@
+imx95-var-dart-jig-eth0-dtbs := imx95-var-dart-jig.dtb imx95-var-dart-jig-eth0.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx95-var-dart-jig-eth0.dtb
+
 dtb-$(CONFIG_ARCH_MXC) += imx95-var-dart-dt8mcustomboard.dtb \
 			  imx95-var-dart-1.0-dt8mcustomboard.dtb \
 			  imx95-var-dart-sonata.dtb \
