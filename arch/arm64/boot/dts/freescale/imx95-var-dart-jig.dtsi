@@ -93,6 +93,16 @@
 	};
 };
 
+&enetc_port2 {
+	phy-mode = "10gbase-r";
+	status = "okay";
+
+	fixed-link {
+		speed = <10000>;
+		full-duplex;
+	};
+};
+
 &combo_rx {
 	status = "okay";
 };
