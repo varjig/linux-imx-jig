@@ -1,0 +1,128 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2023 NXP
+ * Copyright 2024 Variscite Ltd.
+ */
+
+#include "imx95-pinfunc.h"
+#include <dt-bindings/clock/fsl,imx95-clock.h>
+#include <dt-bindings/gpio/gpio.h>
+
+/dts-v1/;
+/plugin/;
+&{/} {
+	sound-wm8904 {
+		compatible = "simple-audio-card";
+		simple-audio-card,bitclock-master = <&dailink_master>;
+		simple-audio-card,format = "i2s";
+		simple-audio-card,frame-master = <&dailink_master>;
+		simple-audio-card,name = "wm8904-audio";
+		simple-audio-card,routing =
+			"Headphone Jack", "HPOUTL",
+			"Headphone Jack", "HPOUTR",
+			"IN2L", "Line In Jack",
+			"IN2R", "Line In Jack",
+			"IN1L", "Microphone Jack",
+			"IN1R", "Microphone Jack";
+		simple-audio-card,widgets =
+			"Microphone", "Microphone Jack",
+			"Headphone", "Headphone Jack",
+			"Line", "Line In Jack";
+		simple-audio-card,mclk-fs = <256>;
+
+		dailink_master: simple-audio-card,codec {
+			sound-dai = <&wm8904>;
+		};
+
+		simple-audio-card,cpu {
+			sound-dai = <&sai3>;
+		};
+	};
+};
+
+/ {
+	fragment@0 {
+		target = <&sai3>;
+		__overlay__ {
+			#sound-dai-cells = <0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_sai3>;
+			assigned-clocks = <&scmi_clk IMX95_CLK_AUDIOPLL1_VCO>,
+						<&scmi_clk IMX95_CLK_AUDIOPLL2_VCO>,
+						<&scmi_clk IMX95_CLK_AUDIOPLL1>,
+						<&scmi_clk IMX95_CLK_AUDIOPLL2>,
+						<&scmi_clk IMX95_CLK_SAI3>;
+			assigned-clock-parents = <0>, <0>, <0>, <0>,
+			 			<&scmi_clk IMX95_CLK_AUDIOPLL1>;
+			assigned-clock-rates = <3932160000>,
+					    	<3612672000>, <393216000>,
+			       			<361267200>, <12288000>;
+			fsl,sai-mclk-direction-output;
+			status = "okay";
+		};
+	};
+
+	fragment@1 {
+		target = <&scmi_iomuxc>;
+		__overlay__ {
+			pinctrl_sai3: sai3grp {
+				fsl,pins = <
+					IMX95_PAD_GPIO_IO17__SAI3_MCLK					0x31e
+					IMX95_PAD_GPIO_IO16__SAI3_TX_BCLK				0x31e
+					IMX95_PAD_GPIO_IO26__SAI3_TX_SYNC				0x31e
+					IMX95_PAD_GPIO_IO20__SAI3_RX_DATA_BIT0				0x31e
+					IMX95_PAD_GPIO_IO21__SAI3_TX_DATA_BIT0				0x31e
+				>;
+			};
+		};
+	};
+
+	fragment@2 {
+		target = <&lpi2c8>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clock-frequency = <400000>;
+			pinctrl-names = "default","gpio","sleep";
+			pinctrl-0 = <&pinctrl_lpi2c8>;
+			pinctrl-1 = <&pinctrl_lpi2c8_gpio>;
+			pinctrl-2 = <&pinctrl_lpi2c8_gpio>;
+			scl-gpios = <&gpio2 10 GPIO_ACTIVE_HIGH>;
+			sda-gpios = <&gpio2 11 GPIO_ACTIVE_HIGH>;
+			status = "okay";
+
+			wm8904: codec@1a {
+				compatible = "wlf,wm8904";
+				#sound-dai-cells = <0>;
+				reg = <0x1a>;
+				clocks = <&scmi_clk IMX95_CLK_SAI3>;
+				clock-names = "mclk";
+				DCVDD-supply = <&reg_audio>;
+				DBVDD-supply = <&reg_audio>;
+				AVDD-supply = <&reg_audio>;
+				CPVDD-supply = <&reg_audio>;
+				MICVDD-supply = <&reg_audio>;
+				num-drc-cfgs = <5>;
+				drc-cfg-names = "default", "peaklimiter", "tradition", "soft", "music";
+				drc-cfg-regs =
+						/* coded default: KNEE_IP = KNEE_OP = 0, HI_COMP = LO_COMP = 1  */
+						<0x01af 0x3248 0x0000 0x0000>,
+						/* coded default: KNEE_IP = -24, KNEE_OP = -6, HI_COMP = 1/4, LO_COMP = 1 */
+						<0x04af 0x324b 0x0010 0x0408>,
+						/* coded default: KNEE_IP = -42, KNEE_OP = -3, HI_COMP = 0, LO_COMP = 1 */
+						<0x04af 0x324b 0x0028 0x0704>,
+						/* coded default: KNEE_IP = -45, KNEE_OP = -9, HI_COMP = 1/8, LO_COMP = 1 */
+						<0x04af 0x324b 0x0018 0x078c>,
+						/* coded default: KNEE_IP = -30, KNEE_OP = -10.5, HI_COMP = 1/4, LO_COMP = 1 */
+						<0x04af 0x324b 0x0010 0x050e>;
+				gpio-cfg = <
+					0x0018 /* GPIO1 => DMIC_CLK */
+					0xffff /* GPIO2 => don't touch */
+					0xffff /* GPIO3 => don't touch */
+					0xffff /* GPIO4 => don't touch */
+				>;
+				status = "okay";
+			};
+		};
+	};
+};
