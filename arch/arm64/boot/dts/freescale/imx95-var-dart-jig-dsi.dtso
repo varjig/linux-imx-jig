@@ -1,0 +1,102 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2023 NXP
+ * Copyright 2024 Variscite Ltd.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/clock/fsl,imx95-clock.h>
+
+
+&{/} {
+    panel {
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+
+            port@1 {
+                reg = <1>;
+                panel_in_bridge: endpoint {
+                    remote-endpoint = <&bridge_out_panel>;
+                };
+            };
+        };
+    };
+};
+
+&display_pixel_link {
+    status = "okay";
+};
+
+&dpu {
+    status = "okay";
+  
+    assigned-clocks = <&scmi_clk IMX95_CLK_DISP1PIX>,
+                      <&scmi_clk IMX95_CLK_VIDEOPLL1_VCO>,
+                      <&scmi_clk IMX95_CLK_VIDEOPLL1>;
+    assigned-clock-parents = <&scmi_clk IMX95_CLK_VIDEOPLL1>;
+    assigned-clock-rates = <0>, <3360000000>, <420000000>;
+
+};
+
+&lpi2c3 {
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    dsi_lvds_bridge: sn65dsi84@2c {
+        compatible = "ti,sn65dsi84";
+        reg = <0x2c>;
+        enable-gpios = <&display_expander 0 GPIO_ACTIVE_HIGH>,
+                       <&display_expander 3 GPIO_ACTIVE_HIGH>;
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+
+            port@0 {
+                reg = <0>;
+                bridge_in_dsi: endpoint {
+                    data-lanes = <1 2 3 4>;
+                    remote-endpoint = <&mipi_dsi_out>;
+                };
+            };
+
+            port@2 {
+                reg = <2>;
+                bridge_out_panel: endpoint {
+                    remote-endpoint = <&panel_in_bridge>;
+                };
+            };
+        };
+    };
+};
+
+&mipi_dsi {
+    status = "okay";
+
+    ports {
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        port@1 {
+            reg = <1>;
+
+            mipi_dsi_out: endpoint {
+                remote-endpoint = <&bridge_in_dsi>;
+            };
+        };
+    };
+};
+
+&pixel_interleaver {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	channel@1 {
+		reg = <1>;
+		status = "okay";
+	};
+};
