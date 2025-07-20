@@ -9,7 +9,7 @@
 
 /dts-v1/;
 /plugin/;
-/ {
+&{/} {
 	usdhc3_pwrseq: usdhc3_pwrseq {
 		compatible = "mmc-pwrseq-simple";
 		post-power-on-delay-ms = <100>;
@@ -22,20 +22,16 @@
 
 /* WiFi */
 &usdhc3 {
-	#address-cells = <1>;
-	#size-cells = <0>;
 	pinctrl-names = "default","state_100mhz","state_200mhz","sleep";
 	pinctrl-0 = <&pinctrl_usdhc3>, <&pinctrl_usdhc3_gpio>;
 	pinctrl-1 = <&pinctrl_usdhc3_100mhz>, <&pinctrl_usdhc3_gpio>;
 	pinctrl-2 = <&pinctrl_usdhc3_200mhz>, <&pinctrl_usdhc3_gpio>;
-	pinctrl-3 = <&pinctrl_usdhc3_sleep>, <&pinctrl_usdhc3_gpio>;
-	fsl,tuning-start-tap = <1>;
-	fsl,tuning-step= <2>;
+	pinctrl-3 = <&pinctrl_usdhc3>, <&pinctrl_usdhc3_gpio>;
 	mmc-pwrseq = <&usdhc3_pwrseq>;
 	bus-width = <4>;
 	non-removable;
 	wakeup-source;
-	/delete-property/ keep-power-in-suspend;
+	keep-power-in-suspend;
 	status = "okay";
 };
 
