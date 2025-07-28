@@ -871,12 +871,11 @@ dtb-$(CONFIG_ARCH_MXC) += imx95-19x19-verdin-rm692c9.dtb
 
 DTC_FLAGS_imx95-var-dart-jig-overlay := -@
 imx95-var-dart-jig-overlay-dtbs := imx95-var-dart-jig.dtb \
-				   imx95-var-dart-jig-eth0.dtbo \
-			           imx95-var-dart-jig-sai3.dtbo \
-				   imx95-var-dart-jig-mipi-csi1.dtbo \
-				   imx95-var-dart-jig-lvds1.dtbo \
-				   imx95-var-dart-jig-dsi.dtbo \
-				   imx95-var-dart-jig-usdhc3.dtbo
+					imx95-var-dart-jig-eth0.dtbo \
+					imx95-var-dart-jig-audio.dtbo \
+					imx95-var-dart-jig-mipi-csi1.dtbo \
+					imx95-var-dart-jig-lvds1.dtbo \
+					imx95-var-dart-jig-usdhc3.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx95-var-dart-jig-overlay.dtb
 
 dtb-$(CONFIG_ARCH_MXC) += imx95-var-dart-dt8mcustomboard.dtb \
