@@ -76,7 +76,6 @@
 	};
 
 	/delete-node/ sound-wm8904;
-	/delete-node/ usdhc3;
 	/delete-node/ usdhc3_pwrseq;
 };
 
@@ -202,8 +201,10 @@
 };
 
 &lpi2c8 {
-	/delete-property/ pinctrl-names;
-	/delete-property/ pinctrl-0;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lpi2c8_gpio>;
+	status = "okay";
+
 	/delete-property/ pinctrl-1;
 	/delete-property/ pinctrl-2;
 	/delete-property/ scl-gpios;
@@ -233,6 +234,15 @@
 	expander0: gpio@21 {
 		compatible = "nxp,pca9534";
 		reg = <0x21>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	tpm_expander: gpio@22 {
+		compatible = "nxp,pca9534";
+		reg = <0x22>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
 		gpio-controller;
 		#gpio-cells = <2>;
 	};
@@ -337,12 +347,6 @@
 		reg = <0>;
 		status = "okay";
 	};
-};
-
-&sai3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_sai3>;
-	status = "okay";
 };
 
 &scmi_iomuxc {
@@ -469,7 +473,7 @@
 		>;
 	};
 
-	pinctrl_sai3: sai3grp {
+	pinctrl_sai3_gpio: sai3gpiogrp {
 		fsl,pins = <
 			IMX95_PAD_GPIO_IO17__GPIO2_IO_BIT17		0x31e
 			IMX95_PAD_GPIO_IO16__GPIO2_IO_BIT16		0x31e
@@ -558,6 +562,19 @@
 			IMX95_PAD_GPIO_IO03__LPUART5_RTS_B				0x1fe
 		>;
 	};
+
+	pinctrl_lpi2c8_gpio: lpi2c8grp-gpio {
+		fsl,pins = <
+			IMX95_PAD_GPIO_IO10__GPIO2_IO_BIT10				0x31e
+			IMX95_PAD_GPIO_IO11__GPIO2_IO_BIT11				0x31e
+		>;
+	};
+};
+
+&sai3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sai3_gpio>;
+	status = "okay";
 };
 
 &usb2 {
