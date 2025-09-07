@@ -880,10 +880,20 @@ dtb-$(CONFIG_ARCH_MXC) += imx95-19x19-verdin-rm692c9.dtb
 imx95-19x19-verdin-root-dtbs := imx95-19x19-verdin.dtb imx95-19x19-verdin-root.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx95-19x19-verdin-root.dtb imx95-19x19-verdin-inmate.dtb
 
+DTC_FLAGS_imx95-var-dart-jig-overlay := -@
+imx95-var-dart-jig-overlay-dtbs := imx95-var-dart-jig.dtb \
+				   imx95-var-dart-jig-eth0.dtbo \
+				   imx95-var-dart-jig-audio.dtbo \
+				   imx95-var-dart-jig-mipi-csi1.dtbo \
+				   imx95-var-dart-jig-lvds1.dtbo \
+				   imx95-var-dart-jig-usdhc3.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx95-var-dart-jig-overlay.dtb
+
 dtb-$(CONFIG_ARCH_MXC) += imx95-var-dart-dt8mcustomboard.dtb \
 			  imx95-var-dart-sonata.dtb \
 			  imx95-var-dart-dt8mcustomboard-m7.dtb \
-			  imx95-var-dart-sonata-m7.dtb
+			  imx95-var-dart-sonata-m7.dtb \
+			  imx95-var-dart-jig.dtb
 
 dtb-$(CONFIG_ARCH_S32) += s32g274a-evb.dtb
 dtb-$(CONFIG_ARCH_S32) += s32g274a-rdb2.dtb
