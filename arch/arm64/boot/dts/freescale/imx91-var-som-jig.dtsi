@@ -19,10 +19,6 @@
 		regulator-name = "VSD_3V3";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		gpio = <&pca9534 4 GPIO_ACTIVE_HIGH>;
-		off-on-delay-us = <200000>;
-		startup-delay-us = <200000>;
-		enable-active-high;
 	};
 
 	reg_vref_1v8: regulator-adc-vref {
@@ -204,7 +200,7 @@
 &lpi2c5 {
 	#address-cells = <1>;
 	#size-cells = <0>;
-	clock-frequency = <100000>;
+	clock-frequency = <400000>;
 	pinctrl-names = "default", "sleep", "gpio";
 	pinctrl-0 = <&pinctrl_lpi2c5>;
 	pinctrl-1 = <&pinctrl_lpi2c5_gpio>;
@@ -261,11 +257,20 @@
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
 	pinctrl-3 = <&pinctrl_usdhc2_sleep>;
-	broken-cd;
-	fsl,cd-gpio-wakeup-disable;
+
 	vmmc-supply = <&reg_usdhc2_vmmc>;
+	broken-cd;
 	bus-width = <4>;
 	status = "okay";
 	no-sdio;
 	no-mmc;
+};
+
+&media_blk_ctrl {
+	status = "okay";
+};
+
+&ads7846_ts {
+       ti,debounce-tol = /bits/ 16 <300>;
+       ti,debounce-rep = /bits/ 16 <5>;
 };
