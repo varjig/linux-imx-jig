@@ -22,22 +22,21 @@
 		clocks = <&clk_ov5640_fixed>;
 		clock-names = "xclk";
 		assigned-clock-rates = <24000000>;
-		csi_id = <1>;
-		mclk = <24000000>;
-		mclk_source = <0>;
-		mipi_csi;
 		status = "okay";
+
 		port {
 			ov5640_mipi_1_ep: endpoint {
 				remote-endpoint = <&mipi_csi1_ep>;
 				data-lanes = <1 2>;
-				bus-type = <4>;
+				clock-lanes = <0>;
 			};
 		};
 	};
 };
 
 &isi {
+	status = "okay";
+
 	ports {
 		#address-cells = <1>;
 		#size-cells = <0>;

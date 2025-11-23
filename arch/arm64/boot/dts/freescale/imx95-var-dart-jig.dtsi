@@ -210,8 +210,9 @@
 	clock-frequency = <400000>;
 	pinctrl-names = "default", "gpio", "sleep";
 	pinctrl-0 = <&pinctrl_lpi2c3>;
-	pinctrl-1 = <&pinctrl_lpi2c3_gpio>;
-	pinctrl-2 = <&pinctrl_lpi2c3_gpio>;
+	pinctrl-1 = <&pinctrl_lpi2c3>;
+	// pinctrl-1 = <&pinctrl_lpi2c3_gpio>;
+	// pinctrl-2 = <&pinctrl_lpi2c3_gpio>;
 	scl-gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>;
 	sda-gpios = <&gpio2 29 GPIO_ACTIVE_HIGH>;
 	status = "okay";
@@ -266,19 +267,13 @@
 		clocks = <&clk_ov5640_fixed>;
 		clock-names = "xclk";
 		assigned-clock-rates = <24000000>;
-		csi_id = <0>;
-		mclk = <24000000>;
-		mclk_source = <0>;
-		mipi_csi;
-		powerdown-gpios = <&expander0 0 GPIO_ACTIVE_HIGH>;
-		reset-gpios = <&expander0 1 GPIO_ACTIVE_LOW>;
 		status = "okay";
 
 		port {
 			ov5640_mipi_0_ep: endpoint {
 				remote-endpoint = <&mipi_csi0_ep>;
 				data-lanes = <1 2>;
-				bus-type = <4>;
+				clock-lanes = <0>;
 			};
 		};
 	};
@@ -494,12 +489,14 @@
 		>;
 	};
 
+/*
 	pinctrl_lpi2c3_gpio: lpi2c3grp-gpio {
 		fsl,pins = <
 			IMX95_PAD_GPIO_IO28__GPIO2_IO_BIT28		0x31e
 			IMX95_PAD_GPIO_IO29__GPIO2_IO_BIT29		0x31e
 		>;
 	};
+*/
 
 	pinctrl_lpi2c4: lpi2c4grp {
 		fsl,pins = <
