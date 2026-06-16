@@ -551,16 +551,9 @@
 		>;
 	};
 
-	pinctrl_lpi2c8_gpio: lpi2c8grp-gpio {
-		fsl,pins = <
-			IMX95_PAD_GPIO_IO10__GPIO2_IO_BIT10				0x31e
-			IMX95_PAD_GPIO_IO11__GPIO2_IO_BIT11				0x31e
-		>;
-	};
-
-	pinctrl_phy0res: phy0resgrp{
-		fsl,pins = <
-			IMX95_PAD_GPIO_IO36__GPIO5_IO_BIT16				0x31e
+		pinctrl_phy0res: phy0resgrp{
+			fsl,pins = <
+				IMX95_PAD_GPIO_IO36__GPIO5_IO_BIT16				0x31e
 		>;
 	};
 };
@@ -612,16 +605,5 @@
 		reset-gpios = <&gpio5 16 GPIO_ACTIVE_LOW>;
 		reset-assert-us = <10000>;
 		reset-deassert-us = <100000>;
-
-		mxl-8611x,led0_cfg = <(
-			MXL8611X_LEDX_CFG_LINK_UP_RX_ACT_ON |
-			MXL8611X_LEDX_CFG_LINK_UP_TX_ACT_ON |
-			MXL8611X_LEDX_CFG_TRAFFIC_ACT_BLINK_IND
-		)>;
-		mxl-8611x,led1_cfg = <(
-			MXL8611X_LEDX_CFG_LINK_UP_10MB_ON |
-			MXL8611X_LEDX_CFG_LINK_UP_100MB_ON |
-			MXL8611X_LEDX_CFG_LINK_UP_1GB_ON
-		)>;
 	};
 };
