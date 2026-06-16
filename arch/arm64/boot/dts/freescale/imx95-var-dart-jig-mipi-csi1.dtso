@@ -1,0 +1,101 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2023 NXP
+ * Copyright 2024 Variscite Ltd.
+ */
+
+#include "imx95-pinfunc.h"
+#include <dt-bindings/gpio/gpio.h>
+
+/dts-v1/;
+/plugin/;
+&lpi2c4 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	ov5640_mipi1: ov5640_mipi1@3c {
+		compatible = "ovti,ov5640";
+		reg = <0x3c>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clocks = <&clk_ov5640_fixed>;
+		clock-names = "xclk";
+		assigned-clock-rates = <24000000>;
+		status = "okay";
+
+		port {
+			ov5640_mipi_1_ep: endpoint {
+				remote-endpoint = <&mipi_csi1_ep>;
+				data-lanes = <1 2>;
+				clock-lanes = <0>;
+			};
+		};
+	};
+};
+
+&isi {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@3 {
+			reg = <3>;
+			isi_in_3: endpoint {
+				remote-endpoint = <&formatter_1_out>;
+			};
+		};
+	};
+};
+
+&mipi_csi1 {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			mipi_csi1_ep: endpoint {
+				remote-endpoint = <&ov5640_mipi_1_ep>;
+				data-lanes = <1 2>;
+				clock-lanes = <0>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+				mipi_csi1_out: endpoint {
+				remote-endpoint = <&formatter_1_in>;
+			};
+		};
+	};
+};
+
+&csi_pixel_formatter_1 {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+
+			formatter_1_in: endpoint {
+				remote-endpoint = <&mipi_csi1_out>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+
+			formatter_1_out: endpoint {
+				remote-endpoint = <&isi_in_3>;
+			};
+		};
+	};
+};
