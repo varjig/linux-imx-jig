@@ -79,12 +79,12 @@
 			regulator-max-microvolt = <1800000>;
 		};
 
-		wlreg_on: fixedregulator@100 {
-			compatible = "regulator-fixed";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			regulator-name = "wlreg_on";
-		};
+	};
+	usdhc2_pwrseq: usdhc2_pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		post-power-on-delay-ms = <100>;
+		power-off-delay-us = <10000>;
+		reset-gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;	/* WL_REG_ON = GPIO1_IO4 */
 	};
 };
 
@@ -697,7 +697,7 @@
 	keep-power-in-suspend;
 	non-removable;
 	pm-ignore-notify;
-	vmmc-supply = <&wlreg_on>;
+	mmc-pwrseq = <&usdhc2_pwrseq>;
 	status = "okay";
 };
 
