@@ -17,8 +17,6 @@
 	ov5640_mipi1: ov5640_mipi1@3c {
 		compatible = "ovti,ov5640";
 		reg = <0x3c>;
-		#address-cells = <1>;
-		#size-cells = <0>;
 		clocks = <&clk_ov5640_fixed>;
 		clock-names = "xclk";
 		assigned-clock-rates = <24000000>;
