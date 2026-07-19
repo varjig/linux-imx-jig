@@ -292,6 +292,9 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_pcal6416>;
 		reset-gpios = <&gpio4 3 GPIO_ACTIVE_LOW>;
+		gpio-line-names =
+			"", "", "", "", "", "", "", "",
+			"", "", "", "USB_HUB_GRST_N";
 		status = "okay";
 	};
 
