@@ -13,9 +13,11 @@
 #include <linux/io.h>
 #include <linux/iopoll.h>
 #include <linux/delay.h>
+#include <linux/debugfs.h>
 #include <linux/err.h>
 #include <linux/clk.h>
 #include <linux/module.h>
+#include <linux/mutex.h>
 #include <linux/slab.h>
 #include <linux/pm_qos.h>
 #include <linux/mmc/host.h>
@@ -26,6 +28,7 @@
 #include <linux/platform_device.h>
 #include <linux/pinctrl/consumer.h>
 #include <linux/pm_runtime.h>
+#include <linux/uaccess.h>
 #include "sdhci-cqhci.h"
 #include "sdhci-pltfm.h"
 #include "sdhci-esdhc.h"
@@ -85,6 +88,7 @@
 #define  ESDHC_TUNE_CTRL_MAX		((1 << 7) - 1)
 #define ESDHC_TUNE_CTRL_STATUS_TAP_SEL_PRE_MASK		0x7f000000
 #define ESDHC_TUNE_CTRL_STATUS_TAP_SEL_PRE_SHIFT	24
+#define ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_PRE_MASK	0x00007f00
 #define ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_PRE_SHIFT	8
 #define ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_OUT_SHIFT	4
 #define ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_POST_SHIFT	0
@@ -253,6 +257,24 @@ struct esdhc_soc_data {
 	u32 quirks;
 };
 
+enum esdhc_tuning_mode {
+	ESDHC_TUNING_MODE_AUTO,
+	ESDHC_TUNING_MODE_MANUAL,
+};
+
+struct esdhc_tuning_default {
+	struct list_head node;
+	unsigned int index;
+	enum esdhc_tuning_mode mode;
+	bool overridden;
+#ifdef CONFIG_DEBUG_FS
+	struct dentry *debugfs_root;
+#endif
+};
+
+static LIST_HEAD(esdhc_tuning_defaults);
+static DEFINE_MUTEX(esdhc_tuning_defaults_lock);
+
 static const struct esdhc_soc_data esdhc_imx25_data = {
 	.flags = ESDHC_FLAG_ERR004536,
 };
@@ -387,6 +409,7 @@ struct pltfm_imx_data {
 	 * during card init through usdhc_init_card().
 	 */
 	unsigned int init_card_type;
+	enum esdhc_tuning_mode tuning_mode;
 
 	enum {
 		NO_CMD_PENDING,      /* no multiblock command pending */
@@ -395,7 +418,16 @@ struct pltfm_imx_data {
 	} multiblock_status;
 	u32 is_ddr;
 	struct pm_qos_request pm_qos_req;
+#ifdef CONFIG_DEBUG_FS
+	bool tap_debugfs_pm_ref;
+#endif
 };
+
+static bool esdhc_uses_manual_tuning(struct pltfm_imx_data *imx_data)
+{
+	return READ_ONCE(imx_data->tuning_mode) == ESDHC_TUNING_MODE_MANUAL ||
+	       (imx_data->socdata->flags & ESDHC_FLAG_MAN_TUNING);
+}
 
 static const struct of_device_id imx_esdhc_dt_ids[] = {
 	{ .compatible = "fsl,imx25-esdhc", .data = &esdhc_imx25_data, },
@@ -529,6 +561,260 @@ static inline void usdhc_auto_tuning_mode_sel_and_en(struct sdhci_host *host)
 	reg = readl(host->ioaddr + ESDHC_MIX_CTRL);
 	reg |= ESDHC_MIX_CTRL_AUTO_TUNE_EN;
 	writel(reg, host->ioaddr + ESDHC_MIX_CTRL);
+}
+
+#ifdef CONFIG_DEBUG_FS
+static int esdhc_parse_tuning_mode(const char *mode,
+				   enum esdhc_tuning_mode *tuning_mode)
+{
+	if (sysfs_streq(mode, "auto"))
+		*tuning_mode = ESDHC_TUNING_MODE_AUTO;
+	else if (sysfs_streq(mode, "manual"))
+		*tuning_mode = ESDHC_TUNING_MODE_MANUAL;
+	else
+		return -EINVAL;
+
+	return 0;
+}
+
+static int esdhc_tap_get(void *data, u64 *tap)
+{
+	struct sdhci_host *host = data;
+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+	struct pltfm_imx_data *imx_data = sdhci_pltfm_priv(pltfm_host);
+	unsigned long flags;
+	u32 reg, mix_ctrl, tuning_ctrl;
+
+	if (!esdhc_is_usdhc(imx_data))
+		return -EOPNOTSUPP;
+
+	spin_lock_irqsave(&host->lock, flags);
+	reg = readl(host->ioaddr + ESDHC_TUNE_CTRL_STATUS);
+	mix_ctrl = readl(host->ioaddr + ESDHC_MIX_CTRL);
+	tuning_ctrl = readl(host->ioaddr + ESDHC_TUNING_CTRL);
+	spin_unlock_irqrestore(&host->lock, flags);
+
+	if (!(mix_ctrl & ESDHC_MIX_CTRL_AUTO_TUNE_EN) &&
+	    !(tuning_ctrl & ESDHC_STD_TUNING_EN))
+		*tap = (reg & ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_PRE_MASK) >>
+		       ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_PRE_SHIFT;
+	else
+		*tap = (reg & ESDHC_TUNE_CTRL_STATUS_TAP_SEL_PRE_MASK) >>
+		       ESDHC_TUNE_CTRL_STATUS_TAP_SEL_PRE_SHIFT;
+
+	return 0;
+}
+
+static int esdhc_tap_set(void *data, u64 tap)
+{
+	struct sdhci_host *host = data;
+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+	struct pltfm_imx_data *imx_data = sdhci_pltfm_priv(pltfm_host);
+	unsigned long flags;
+	u32 mix_ctrl, tuning_ctrl, tune_status;
+	u32 mix_readback = 0, tune_readback = 0;
+
+	if (!esdhc_is_usdhc(imx_data))
+		return -EOPNOTSUPP;
+	if (tap > ESDHC_TUNE_CTRL_MAX)
+		return -ERANGE;
+
+	spin_lock_irqsave(&host->lock, flags);
+
+	/* Keep the hardware from moving away from the requested fixed tap. */
+	mix_ctrl = readl(host->ioaddr + ESDHC_MIX_CTRL);
+	mix_ctrl &= ~(ESDHC_MIX_CTRL_AUTO_TUNE_EN |
+		      ESDHC_MIX_CTRL_EXE_TUNE);
+	mix_ctrl |= ESDHC_MIX_CTRL_SMPCLK_SEL |
+		    ESDHC_MIX_CTRL_FBCLK_SEL;
+	writel(mix_ctrl, host->ioaddr + ESDHC_MIX_CTRL);
+
+	tuning_ctrl = readl(host->ioaddr + ESDHC_TUNING_CTRL);
+	tuning_ctrl &= ~ESDHC_STD_TUNING_EN;
+	writel(tuning_ctrl, host->ioaddr + ESDHC_TUNING_CTRL);
+
+	/*
+	 * Program the fixed delay using the same field used by manual tuning
+	 * and tuning restore. OUT and POST are zero because auto tuning is off.
+	 */
+	tune_status = (u32)tap <<
+		      ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_PRE_SHIFT;
+	writel(tune_status, host->ioaddr + ESDHC_TUNE_CTRL_STATUS);
+
+	tune_readback = readl(host->ioaddr + ESDHC_TUNE_CTRL_STATUS);
+	mix_readback = readl(host->ioaddr + ESDHC_MIX_CTRL);
+
+	spin_unlock_irqrestore(&host->lock, flags);
+
+	printk(KERN_INFO
+	       "%s: debugfs fixed tap=%llu tune_status=0x%08x mix_ctrl=0x%08x\n",
+	       mmc_hostname(host->mmc), (unsigned long long)tap,
+	       tune_readback, mix_readback);
+
+	return 0;
+}
+
+DEFINE_SIMPLE_ATTRIBUTE(esdhc_tap_fops, esdhc_tap_get, esdhc_tap_set,
+			"%llu\n");
+
+static ssize_t esdhc_tuning_mode_read(struct file *file, char __user *buf,
+				      size_t count, loff_t *ppos)
+{
+	struct sdhci_host *host = file->private_data;
+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+	struct pltfm_imx_data *imx_data = sdhci_pltfm_priv(pltfm_host);
+	const char *mode;
+
+	mode = READ_ONCE(imx_data->tuning_mode) == ESDHC_TUNING_MODE_MANUAL ?
+	       "manual\n" : "auto\n";
+
+	return simple_read_from_buffer(buf, count, ppos, mode, strlen(mode));
+}
+
+static ssize_t esdhc_tuning_mode_write(struct file *file,
+				       const char __user *buf,
+				       size_t count, loff_t *ppos)
+{
+	struct sdhci_host *host = file->private_data;
+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+	struct pltfm_imx_data *imx_data = sdhci_pltfm_priv(pltfm_host);
+	char mode[16];
+	size_t len;
+	enum esdhc_tuning_mode new_mode;
+
+	len = min(count, sizeof(mode) - 1);
+	if (copy_from_user(mode, buf, len))
+		return -EFAULT;
+	mode[len] = '\0';
+
+	if (esdhc_parse_tuning_mode(mode, &new_mode))
+		return -EINVAL;
+
+	WRITE_ONCE(imx_data->tuning_mode, new_mode);
+	mmc_retune_needed(host->mmc);
+
+	printk(KERN_INFO "%s: tuning mode=%s, retune requested\n",
+	       mmc_hostname(host->mmc),
+	       new_mode == ESDHC_TUNING_MODE_MANUAL ? "manual" : "auto");
+
+	return count;
+}
+
+static const struct file_operations esdhc_tuning_mode_fops = {
+	.owner = THIS_MODULE,
+	.open = simple_open,
+	.read = esdhc_tuning_mode_read,
+	.write = esdhc_tuning_mode_write,
+	.llseek = default_llseek,
+};
+
+static ssize_t esdhc_default_tuning_mode_read(struct file *file,
+					      char __user *buf,
+					      size_t count, loff_t *ppos)
+{
+	struct esdhc_tuning_default *tuning_default = file->private_data;
+	const char *mode;
+
+	mode = READ_ONCE(tuning_default->mode) ==
+	       ESDHC_TUNING_MODE_MANUAL ? "manual\n" : "auto\n";
+
+	return simple_read_from_buffer(buf, count, ppos, mode, strlen(mode));
+}
+
+static ssize_t esdhc_default_tuning_mode_write(struct file *file,
+					       const char __user *buf,
+					       size_t count, loff_t *ppos)
+{
+	struct esdhc_tuning_default *tuning_default = file->private_data;
+	char mode[16];
+	size_t len;
+	enum esdhc_tuning_mode new_mode;
+
+	len = min(count, sizeof(mode) - 1);
+	if (copy_from_user(mode, buf, len))
+		return -EFAULT;
+	mode[len] = '\0';
+
+	if (esdhc_parse_tuning_mode(mode, &new_mode))
+		return -EINVAL;
+
+	mutex_lock(&esdhc_tuning_defaults_lock);
+	tuning_default->mode = new_mode;
+	tuning_default->overridden = true;
+	mutex_unlock(&esdhc_tuning_defaults_lock);
+
+	printk(KERN_INFO "mmc%u-default: tuning mode=%s\n",
+	       tuning_default->index,
+	       new_mode == ESDHC_TUNING_MODE_MANUAL ? "manual" : "auto");
+
+	return count;
+}
+
+static const struct file_operations esdhc_default_tuning_mode_fops = {
+	.owner = THIS_MODULE,
+	.open = simple_open,
+	.read = esdhc_default_tuning_mode_read,
+	.write = esdhc_default_tuning_mode_write,
+	.llseek = default_llseek,
+};
+#endif
+
+static struct esdhc_tuning_default *
+esdhc_get_tuning_default(unsigned int index)
+{
+	struct esdhc_tuning_default *tuning_default;
+#ifdef CONFIG_DEBUG_FS
+	char name[32];
+#endif
+
+	mutex_lock(&esdhc_tuning_defaults_lock);
+	list_for_each_entry(tuning_default, &esdhc_tuning_defaults, node) {
+		if (tuning_default->index == index)
+			goto out;
+	}
+
+	tuning_default = kzalloc(sizeof(*tuning_default), GFP_KERNEL);
+	if (!tuning_default)
+		goto out;
+
+	tuning_default->index = index;
+	tuning_default->mode = ESDHC_TUNING_MODE_AUTO;
+	list_add_tail(&tuning_default->node, &esdhc_tuning_defaults);
+
+#ifdef CONFIG_DEBUG_FS
+	snprintf(name, sizeof(name), "mmc%u-default", index);
+	tuning_default->debugfs_root = debugfs_create_dir(name, NULL);
+	if (IS_ERR_OR_NULL(tuning_default->debugfs_root)) {
+		tuning_default->debugfs_root = NULL;
+	} else if (IS_ERR_OR_NULL(debugfs_create_file(
+					"tuning_mode", 0666,
+					tuning_default->debugfs_root,
+					tuning_default,
+					&esdhc_default_tuning_mode_fops))) {
+		debugfs_remove_recursive(tuning_default->debugfs_root);
+		tuning_default->debugfs_root = NULL;
+	}
+#endif
+
+out:
+	mutex_unlock(&esdhc_tuning_defaults_lock);
+	return tuning_default;
+}
+
+static void esdhc_remove_tuning_defaults(void)
+{
+	struct esdhc_tuning_default *tuning_default, *tmp;
+
+	mutex_lock(&esdhc_tuning_defaults_lock);
+	list_for_each_entry_safe(tuning_default, tmp,
+				 &esdhc_tuning_defaults, node) {
+#ifdef CONFIG_DEBUG_FS
+		debugfs_remove_recursive(tuning_default->debugfs_root);
+#endif
+		list_del(&tuning_default->node);
+		kfree(tuning_default);
+	}
+	mutex_unlock(&esdhc_tuning_defaults_lock);
 }
 
 static u32 esdhc_readl_le(struct sdhci_host *host, int reg)
@@ -1107,11 +1393,16 @@ static void esdhc_reset_tuning(struct sdhci_host *host)
 	if (esdhc_is_usdhc(imx_data)) {
 		ctrl = readl(host->ioaddr + ESDHC_MIX_CTRL);
 		ctrl &= ~ESDHC_MIX_CTRL_AUTO_TUNE_EN;
-		if (imx_data->socdata->flags & ESDHC_FLAG_MAN_TUNING) {
+		if (esdhc_uses_manual_tuning(imx_data)) {
 			ctrl &= ~ESDHC_MIX_CTRL_SMPCLK_SEL;
 			ctrl &= ~ESDHC_MIX_CTRL_FBCLK_SEL;
 			writel(ctrl, host->ioaddr + ESDHC_MIX_CTRL);
 			writel(0, host->ioaddr + ESDHC_TUNE_CTRL_STATUS);
+
+			/* mmc2 uses the software-controlled manual tuning sweep. */
+			tuning_ctrl = readl(host->ioaddr + ESDHC_TUNING_CTRL);
+			tuning_ctrl &= ~ESDHC_STD_TUNING_EN;
+			writel(tuning_ctrl, host->ioaddr + ESDHC_TUNING_CTRL);
 		} else if (imx_data->socdata->flags & ESDHC_FLAG_STD_TUNING) {
 			writel(ctrl, host->ioaddr + ESDHC_MIX_CTRL);
 			/*
@@ -1160,17 +1451,30 @@ static void usdhc_init_card(struct mmc_host *mmc, struct mmc_card *card)
 	imx_data->init_card_type = card->type;
 }
 
+static int esdhc_executing_tuning(struct sdhci_host *host, u32 opcode);
+
 static int usdhc_execute_tuning(struct mmc_host *mmc, u32 opcode)
 {
 	struct sdhci_host *host = mmc_priv(mmc);
+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+	struct pltfm_imx_data *imx_data = sdhci_pltfm_priv(pltfm_host);
+	u32 tune_status, mix_ctrl;
+	u32 current_tap;
+	bool manual_tuning;
 	int err;
 
 	/*
 	 * i.MX uSDHC internally already uses a fixed optimized timing for
 	 * DDR50, normally does not require tuning for DDR50 mode.
 	 */
-	if (host->timing == MMC_TIMING_UHS_DDR50)
+	if (host->timing == MMC_TIMING_UHS_DDR50) {
+		printk(KERN_INFO
+		       "%s: tuning skipped: DDR50 uses fixed timing, clock=%u Hz\n",
+		       mmc_hostname(mmc), mmc->actual_clock);
 		return 0;
+	}
+
+	manual_tuning = esdhc_uses_manual_tuning(imx_data);
 
 	/*
 	 * Reset tuning circuit logic. If not, the previous tuning result
@@ -1178,10 +1482,36 @@ static int usdhc_execute_tuning(struct mmc_host *mmc, u32 opcode)
 	 * correct delay cell.
 	 */
 	esdhc_reset_tuning(host);
-	err = sdhci_execute_tuning(mmc, opcode);
-	/* If tuning done, enable auto tuning */
-	if (!err && !host->tuning_err)
+	if (manual_tuning) {
+		err = esdhc_executing_tuning(host, opcode);
+		host->tuning_err = err;
+	} else {
+		err = sdhci_execute_tuning(mmc, opcode);
+	}
+	/* Keep auto tuning disabled after a manual sweep. */
+	if (!manual_tuning && !err && !host->tuning_err)
 		usdhc_auto_tuning_mode_sel_and_en(host);
+
+	tune_status = readl(host->ioaddr + ESDHC_TUNE_CTRL_STATUS);
+	mix_ctrl = readl(host->ioaddr + ESDHC_MIX_CTRL);
+	if (manual_tuning)
+		current_tap =
+			(tune_status &
+			 ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_PRE_MASK) >>
+			ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_PRE_SHIFT;
+	else
+		current_tap =
+			(tune_status &
+			 ESDHC_TUNE_CTRL_STATUS_TAP_SEL_PRE_MASK) >>
+			ESDHC_TUNE_CTRL_STATUS_TAP_SEL_PRE_SHIFT;
+
+	printk(KERN_INFO
+	       "%s: tuning %s: ret=%d tuning_err=%d status_pre_tap=%u "
+	       "clock=%u Hz tune_status=0x%08x mix_ctrl=0x%08x\n",
+	       mmc_hostname(mmc),
+	       (!err && !host->tuning_err) ? "successful" : "failed",
+	       err, host->tuning_err, current_tap,
+	       mmc->actual_clock, tune_status, mix_ctrl);
 
 	return err;
 }
@@ -1209,9 +1539,6 @@ static void esdhc_prepare_tuning(struct sdhci_host *host, u32 val)
 	writel(reg, host->ioaddr + ESDHC_MIX_CTRL);
 	writel(val << ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_PRE_SHIFT,
 				host->ioaddr + ESDHC_TUNE_CTRL_STATUS);
-	dev_dbg(mmc_dev(host->mmc),
-		"tuning with delay 0x%x ESDHC_TUNE_CTRL_STATUS 0x%x\n",
-			val, readl(host->ioaddr + ESDHC_TUNE_CTRL_STATUS));
 
 	/* set RST_FIFO to reset the async FIFO, and wat it to self-clear */
 	sys_ctrl = readl(host->ioaddr + ESDHC_SYSTEM_CONTROL);
@@ -1237,69 +1564,83 @@ static void esdhc_post_tuning(struct sdhci_host *host)
  */
 static int esdhc_executing_tuning(struct sdhci_host *host, u32 opcode)
 {
-	int min, max, avg, ret;
-	int win_length, target_min, target_max, target_win_length;
-	u32 clk_tune_ctrl_status;
+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+	struct pltfm_imx_data *imx_data = sdhci_pltfm_priv(pltfm_host);
+	const int end_tap = ESDHC_TUNE_CTRL_MAX;
+	const int start_tap =
+		READ_ONCE(imx_data->tuning_mode) == ESDHC_TUNING_MODE_MANUAL ?
+			      1 : ESDHC_TUNE_CTRL_MIN;
+	const int step = ESDHC_TUNE_CTRL_STEP;
+	int tap, ret;
+	int window_min = -1, window_max = -1;
+	int best_min = -1, best_max = -1, best_samples = 0;
+	int samples, selected_tap;
+	u32 tuning_ctrl;
 
-	min = ESDHC_TUNE_CTRL_MIN;
-	max = ESDHC_TUNE_CTRL_MIN;
-	target_win_length = 0;
-	while (max < ESDHC_TUNE_CTRL_MAX) {
-		/* find the mininum delay first which can pass tuning */
-		while (min < ESDHC_TUNE_CTRL_MAX) {
-			esdhc_prepare_tuning(host, min);
-			if (!mmc_send_tuning(host->mmc, opcode, NULL))
-				break;
-			min += ESDHC_TUNE_CTRL_STEP;
+	/* Standard tuning may have been enabled during controller setup. */
+	tuning_ctrl = readl(host->ioaddr + ESDHC_TUNING_CTRL);
+	tuning_ctrl &= ~ESDHC_STD_TUNING_EN;
+	writel(tuning_ctrl, host->ioaddr + ESDHC_TUNING_CTRL);
+
+	for (tap = start_tap; tap <= end_tap; tap += step) {
+		esdhc_prepare_tuning(host, tap);
+		ret = mmc_send_tuning(host->mmc, opcode, NULL);
+
+		if (!ret) {
+			if (window_min < 0)
+				window_min = tap;
+			window_max = tap;
+			continue;
 		}
 
-		/* find the maxinum delay which can not pass tuning */
-		max = min + ESDHC_TUNE_CTRL_STEP;
-		while (max < ESDHC_TUNE_CTRL_MAX) {
-			esdhc_prepare_tuning(host, max);
-			if (mmc_send_tuning(host->mmc, opcode, NULL)) {
-				max -= ESDHC_TUNE_CTRL_STEP;
-				break;
-			}
-			max += ESDHC_TUNE_CTRL_STEP;
-		}
+		if (window_min < 0)
+			continue;
 
-		win_length = max - min + 1;
-		/* get the largest pass window */
-		if (win_length > target_win_length) {
-			target_win_length = win_length;
-			target_min = min;
-			target_max = max;
+		samples = (window_max - window_min) / step + 1;
+		printk(KERN_INFO
+		       "%s: manual tuning found window=%d..%d samples=%d span=%d\n",
+		       mmc_hostname(host->mmc), window_min, window_max,
+		       samples, window_max - window_min);
+		if (samples > best_samples) {
+			best_min = window_min;
+			best_max = window_max;
+			best_samples = samples;
 		}
-
-		/* continue to find the next pass window */
-		min = max + ESDHC_TUNE_CTRL_STEP;
+		window_min = -1;
+		window_max = -1;
 	}
 
-	/* use average delay to get the best timing */
-	avg = (target_min + target_max) / 2;
-	esdhc_prepare_tuning(host, avg);
+	/* Close a passing window that reaches the final tested tap, 127. */
+	if (window_min >= 0) {
+		samples = (window_max - window_min) / step + 1;
+		printk(KERN_INFO
+		       "%s: manual tuning found window=%d..%d samples=%d span=%d\n",
+		       mmc_hostname(host->mmc), window_min, window_max,
+		       samples, window_max - window_min);
+		if (samples > best_samples) {
+			best_min = window_min;
+			best_max = window_max;
+			best_samples = samples;
+		}
+	}
+
+	if (!best_samples) {
+		esdhc_post_tuning(host);
+		printk(KERN_ERR
+		       "%s: manual tuning failed: no valid tap found\n",
+		       mmc_hostname(host->mmc));
+		return -EIO;
+	}
 
 	/*
-	 * adjust the delay accroding to tuning window, make preparation
-	 * for the auto-tuning logic. According to hardware suggest, need
-	 * to config the auto tuning window width to 3, to make the auto
-	 * tuning logic have enough space to handle the sample point shift
-	 * caused by temperature change.
+	 * Pick a tap that was actually tested. For an even number of samples,
+	 * use the lower of the two centre samples.
 	 */
-	clk_tune_ctrl_status = (avg - ESDHC_AUTO_TUNING_WINDOW) <<
-					ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_PRE_SHIFT |
-				ESDHC_AUTO_TUNING_WINDOW <<
-					ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_OUT_SHIFT |
-				ESDHC_AUTO_TUNING_WINDOW <<
-					ESDHC_TUNE_CTRL_STATUS_DLY_CELL_SET_POST_SHIFT;
-	writel(clk_tune_ctrl_status, host->ioaddr + ESDHC_TUNE_CTRL_STATUS);
+	selected_tap = best_min + ((best_samples - 1) / 2) * step;
+	esdhc_prepare_tuning(host, selected_tap);
 
 	ret = mmc_send_tuning(host->mmc, opcode, NULL);
 	esdhc_post_tuning(host);
-
-	dev_dbg(mmc_dev(host->mmc), "tuning %s at 0x%x ret %d\n",
-		ret ? "failed" : "passed", avg, ret);
 
 	return ret;
 }
@@ -1777,6 +2118,8 @@ sdhci_esdhc_imx_probe_dt(struct platform_device *pdev,
 {
 	struct device_node *np = pdev->dev.of_node;
 	struct esdhc_platform_data *boarddata = &imx_data->boarddata;
+	struct esdhc_tuning_default *tuning_default;
+	const char *tuning_mode;
 	int ret;
 
 	if (of_property_read_bool(np, "fsl,wp-controller"))
@@ -1797,6 +2140,31 @@ sdhci_esdhc_imx_probe_dt(struct platform_device *pdev,
 	of_property_read_u32(np, "fsl,tuning-step", &boarddata->tuning_step);
 	of_property_read_u32(np, "fsl,tuning-start-tap",
 			     &boarddata->tuning_start_tap);
+
+	/*
+	 * Each host index has a default that survives unbind/rebind. Until
+	 * its debugfs override is written, allow DT to initialize it.
+	 */
+	tuning_default = esdhc_get_tuning_default(host->mmc->index);
+	if (!tuning_default)
+		return -ENOMEM;
+
+	mutex_lock(&esdhc_tuning_defaults_lock);
+	if (!tuning_default->overridden &&
+	    !of_property_read_string(np, "fsl,tuning-mode", &tuning_mode)) {
+		if (!strcmp(tuning_mode, "manual"))
+			tuning_default->mode = ESDHC_TUNING_MODE_MANUAL;
+		else if (!strcmp(tuning_mode, "auto"))
+			tuning_default->mode = ESDHC_TUNING_MODE_AUTO;
+		else {
+			mutex_unlock(&esdhc_tuning_defaults_lock);
+			return dev_err_probe(&pdev->dev, -EINVAL,
+					     "invalid fsl,tuning-mode \"%s\"\n",
+					     tuning_mode);
+		}
+	}
+	imx_data->tuning_mode = tuning_default->mode;
+	mutex_unlock(&esdhc_tuning_defaults_lock);
 
 	of_property_read_u32(np, "fsl,strobe-dll-delay-target",
 				&boarddata->strobe_dll_delay_target);
@@ -1836,6 +2204,9 @@ static int sdhci_esdhc_imx_probe(struct platform_device *pdev)
 	struct sdhci_pltfm_host *pltfm_host;
 	struct sdhci_host *host;
 	struct cqhci_host *cq_host;
+#ifdef CONFIG_DEBUG_FS
+	struct dentry *tap_dentry, *mode_dentry;
+#endif
 	int err;
 	struct pltfm_imx_data *imx_data;
 
@@ -1979,6 +2350,40 @@ static int sdhci_esdhc_imx_probe(struct platform_device *pdev)
 	pm_suspend_ignore_children(&pdev->dev, 1);
 	pm_runtime_enable(&pdev->dev);
 
+#ifdef CONFIG_DEBUG_FS
+	if (esdhc_is_usdhc(imx_data) && host->mmc->debugfs_root) {
+		mode_dentry = debugfs_create_file("tuning_mode", 0666,
+						 host->mmc->debugfs_root,
+						 host,
+						 &esdhc_tuning_mode_fops);
+		if (IS_ERR_OR_NULL(mode_dentry))
+			dev_warn(&pdev->dev,
+				 "failed to create tuning_mode debugfs file\n");
+
+		/*
+		 * Keep the register interface clocked while tap debugfs access
+		 * is available. An MMIO access while runtime suspended causes
+		 * a synchronous external abort on i.MX91.
+		 */
+		err = pm_runtime_resume_and_get(&pdev->dev);
+		if (err < 0) {
+			dev_warn(&pdev->dev,
+				 "failed to power tap debugfs access: %d\n", err);
+		} else {
+			tap_dentry = debugfs_create_file("tap", 0666,
+							host->mmc->debugfs_root,
+							host, &esdhc_tap_fops);
+			if (IS_ERR_OR_NULL(tap_dentry)) {
+				dev_warn(&pdev->dev,
+					 "failed to create tap debugfs file\n");
+				pm_runtime_put_autosuspend(&pdev->dev);
+			} else {
+				imx_data->tap_debugfs_pm_ref = true;
+			}
+		}
+	}
+#endif
+
 	return 0;
 
 disable_ahb_clk:
@@ -2004,6 +2409,13 @@ static void sdhci_esdhc_imx_remove(struct platform_device *pdev)
 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
 	struct pltfm_imx_data *imx_data = sdhci_pltfm_priv(pltfm_host);
 	int dead;
+
+#ifdef CONFIG_DEBUG_FS
+	if (imx_data->tap_debugfs_pm_ref) {
+		pm_runtime_put_noidle(&pdev->dev);
+		imx_data->tap_debugfs_pm_ref = false;
+	}
+#endif
 
 	pm_runtime_get_sync(&pdev->dev);
 	dead = (readl(host->ioaddr + SDHCI_INT_STATUS) == 0xffffffff);
@@ -2239,7 +2651,18 @@ static struct platform_driver sdhci_esdhc_imx_driver = {
 	.remove_new	= sdhci_esdhc_imx_remove,
 };
 
-module_platform_driver(sdhci_esdhc_imx_driver);
+static int __init sdhci_esdhc_imx_init(void)
+{
+	return platform_driver_register(&sdhci_esdhc_imx_driver);
+}
+module_init(sdhci_esdhc_imx_init);
+
+static void __exit sdhci_esdhc_imx_exit(void)
+{
+	platform_driver_unregister(&sdhci_esdhc_imx_driver);
+	esdhc_remove_tuning_defaults();
+}
+module_exit(sdhci_esdhc_imx_exit);
 
 MODULE_DESCRIPTION("SDHCI driver for Freescale i.MX eSDHC");
 MODULE_AUTHOR("Wolfram Sang <kernel@pengutronix.de>");
