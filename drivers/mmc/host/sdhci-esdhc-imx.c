@@ -76,6 +76,10 @@
 #define ESDHC_STROBE_DLL_STS_REF_LOCK	(1 << 1)
 #define ESDHC_STROBE_DLL_STS_SLV_LOCK	0x1
 
+#define ESDHC_VEND_SPEC2		0xc8
+#define ESDHC_VEND_SPEC2_TUNING_EN_MASK	0x00000070
+#define ESDHC_VEND_SPEC2_TUNING_EN_SHIFT	4
+
 #define ESDHC_TUNING_CTRL		0xcc
 #define ESDHC_STD_TUNING_EN		(1 << 24)
 /* NOTE: the minimum valid tuning start tap for mx6sl is 1 */
@@ -979,7 +983,17 @@ static void esdhc_set_uhs_signaling(struct sdhci_host *host, unsigned timing)
 
 static void esdhc_reset(struct sdhci_host *host, u8 mask)
 {
+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+	struct pltfm_imx_data *imx_data = pltfm_host->priv;
+
 	sdhci_reset(host, mask);
+
+	/* Re-apply the NXP SDIO tuning setup after host controller reset. */
+	if (esdhc_is_usdhc(imx_data) &&
+	    imx_data->boarddata.sdio_interrupt_enabled)
+		esdhc_clrset_le(host, ESDHC_VEND_SPEC2_TUNING_EN_MASK,
+				0x6 << ESDHC_VEND_SPEC2_TUNING_EN_SHIFT,
+				ESDHC_VEND_SPEC2);
 
 	sdhci_writel(host, host->ier, SDHCI_INT_ENABLE);
 	sdhci_writel(host, host->ier, SDHCI_SIGNAL_ENABLE);
@@ -992,6 +1006,13 @@ static void esdhc_hw_reset(struct sdhci_host *host)
 	u16 ctrl;
 
 	sdhci_reset(host, SDHCI_RESET_ALL);
+
+	/* Re-apply the NXP SDIO tuning setup after host controller reset. */
+	if (esdhc_is_usdhc(imx_data) &&
+	    imx_data->boarddata.sdio_interrupt_enabled)
+		esdhc_clrset_le(host, ESDHC_VEND_SPEC2_TUNING_EN_MASK,
+				0x6 << ESDHC_VEND_SPEC2_TUNING_EN_SHIFT,
+				ESDHC_VEND_SPEC2);
 
 	/* Rest the tuning circurt */
 	if (esdhc_is_usdhc(imx_data)) {
@@ -1079,6 +1100,9 @@ sdhci_esdhc_imx_probe_dt(struct platform_device *pdev,
 		boarddata->support_vsel = false;
 	else
 		boarddata->support_vsel = true;
+
+	if (of_property_read_bool(np, "fsl,sdio-interrupt-enabled"))
+		boarddata->sdio_interrupt_enabled = true;
 
 	if (of_property_read_u32(np, "fsl,delay-line", &boarddata->delay_line))
 		boarddata->delay_line = 0;
@@ -1315,6 +1339,15 @@ static int sdhci_esdhc_imx_probe(struct platform_device *pdev)
 		err = sdhci_esdhc_imx_probe_nondt(pdev, host, imx_data);
 	if (err)
 		goto disable_clk;
+
+	/* uSDHC auto tuning mechanism should use DAT[0] and CMD lines
+	 * if SDIO card is enabling SDIO Interrupts on DAT[1].
+	 */
+	if (esdhc_is_usdhc(imx_data) &&
+	    imx_data->boarddata.sdio_interrupt_enabled)
+		esdhc_clrset_le(host, ESDHC_VEND_SPEC2_TUNING_EN_MASK,
+				0x6 << ESDHC_VEND_SPEC2_TUNING_EN_SHIFT,
+				ESDHC_VEND_SPEC2);
 
 	device_set_wakeup_capable(&pdev->dev, 1);
 
