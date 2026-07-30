@@ -47,5 +47,6 @@ struct esdhc_platform_data {
 	unsigned int delay_line;
 	unsigned int tuning_step;       /* The delay cell steps in tuning procedure */
 	unsigned int tuning_start_tap;	/* The start delay cell point in tuning procedure */
+	bool sdio_interrupt_enabled;
 };
 #endif /* __ASM_ARCH_IMX_ESDHC_H */
