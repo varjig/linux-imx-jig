@@ -241,20 +241,6 @@
 			"PMIC_STBY_REQ_B",
 			"CARRIER_PWR_ON";
 		status = "okay";
-
-		usb-hub1-rstn-hog {
-			gpio-hog;
-			gpios = <3 GPIO_ACTIVE_HIGH>;
-			output-high;
-			line-name = "USB_HUB1_RSTN";
-		};
-
-		usb-hub2-rstn-hog {
-			gpio-hog;
-			gpios = <4 GPIO_ACTIVE_HIGH>;
-			output-high;
-			line-name = "USB_HUB2_RSTN";
-		};
 	};
 
 	hdmi_hpd_gpio: gpio@24 {
