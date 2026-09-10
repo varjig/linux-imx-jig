@@ -648,6 +648,12 @@
 			};
 		};
 	};
+
+	st33ktpm2xi2c: tpm@2e {
+		compatible = "st,st33ktpm2xi2c", "tcg,tpm-tis-i2c";
+		reg = <0x2e>;
+		label = "tpm";
+	};
 };
 
 &i2c2 {
