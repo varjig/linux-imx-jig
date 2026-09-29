@@ -527,16 +527,6 @@
 	};
 };
 
-/* Release the active-low on-SOM TPM reset line. */
-&gpio4 {
-	sec_rstn {
-		gpio-hog;
-		gpios = <31 GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "sec_rstn";
-	};
-};
-
 &i2c1 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default";
@@ -661,6 +651,7 @@
 	tpm@2e {
 		compatible = "st,st33ktpm2xi2c", "tcg,tpm-tis-i2c";
 		reg = <0x2e>;
+		reset-gpios = <&gpio4 31 GPIO_ACTIVE_LOW>;
 		label = "tpm";
 	};
 };
