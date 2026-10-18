@@ -85,11 +85,11 @@
 };
 
 &enetc_port2 {
-	phy-mode = "10gbase-r";
+	phy-mode = "sgmii";
 	status = "okay";
 
 	fixed-link {
-		speed = <10000>;
+		speed = <2500>;
 		full-duplex;
 	};
 };
