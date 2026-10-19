@@ -319,10 +319,10 @@
 	status = "okay";
 };
 
-// The BT node has deletated in order to enable BT-UART test
+/* Userspace attaches Bluetooth; keep the TTY available for the UART test. */
 &lpuart5 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart5>;
+	pinctrl-0 = <&pinctrl_uart5>, <&pinctrl_bt>;
 	status = "okay";
 
 	/delete-node/ bluetooth;
