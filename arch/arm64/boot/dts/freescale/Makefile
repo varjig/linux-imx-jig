@@ -959,7 +959,8 @@ imx95-var-dart-jig-overlay-dtbs := imx95-var-dart-jig.dtb \
 				   imx95-var-dart-jig-lvds1.dtbo \
 				   imx95-var-dart-jig-usdhc3.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx95-var-dart-jig-overlay.dtb \
-			  imx95-var-dart-jig.dtb
+			  imx95-var-dart-jig.dtb \
+			  imx95-var-dart-jig-v2.dtbo
 
 dtb-$(CONFIG_ARCH_MXC) += imx95-var-dart-sonata.dtb \
 			  imx95-var-dart-sonata-m7.dtb

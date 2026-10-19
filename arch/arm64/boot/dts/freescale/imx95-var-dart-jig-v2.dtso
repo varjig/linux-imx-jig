@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * DART-MX95 v2 on the JIG Adapter.
+ * Copyright 2026 Variscite Ltd.
+ *
+ * Apply after imx95-var-dart-jig-eth0.dtbo, if Ethernet is fitted: that
+ * overlay selects the v1 PHY and reset pin. Keep the assembly-specific
+ * Ethernet/GPIO pinmux selection and RGMII mode unchanged.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include "imx95-pinfunc.h"
+
+&{/} {
+	model = "Variscite DART-MX95 2.x on JIG Adapter";
+};
+
+&enetc_port0 {
+	phy-handle = <&ethphy0_v2>;
+};
+
+/* The 10G-capable interface, used at 2.5G on the v1 jig, is absent on v2. */
+&enetc_port2 {
+	status = "disabled";
+};
+
+/* GPIO_IO35, GPIO_IO36 and GPIO_IO37 are not available on the v2 SoM. */
+&gpio5 {
+	gpio-reserved-ranges = <15 3>;
+};
+
+/* Runtime overlays cannot delete the v1 PHY node from the base DT. */
+&ethphy0 {
+	status = "disabled";
+};
+
+&netc_emdio {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	/* Match the DP83867 wiring in upstream imx95-var-dart-v2.dtsi. */
+	ethphy0_v2: ethernet-phy@4 {
+		compatible = "ethernet-phy-ieee802.3-c22";
+		reg = <4>;
+		reset-gpios = <&gpio2 18 GPIO_ACTIVE_LOW>;
+		reset-assert-us = <10000>;
+		reset-deassert-us = <100000>;
+		ti,min-output-impedance;
+	};
+};
+
+&pinctrl_phy0res {
+	fsl,pins = <
+		IMX95_PAD_GPIO_IO18__GPIO2_IO_BIT18		0x31e
+	>;
+};
