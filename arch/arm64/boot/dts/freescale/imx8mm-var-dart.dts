@@ -244,7 +244,6 @@
 			fsl,pins = <
 				MX8MM_IOMUXC_I2C1_SCL_I2C1_SCL			0x400001c3
 				MX8MM_IOMUXC_I2C1_SDA_I2C1_SDA			0x400001c3
-				MX8MM_IOMUXC_SAI3_TXFS_GPIO4_IO31		0x19
 			>;
 		};
 
@@ -272,6 +271,12 @@
 		pinctrl_pmic: pmicgrp {
 			fsl,pins = <
 				MX8MM_IOMUXC_SD1_DATA6_GPIO2_IO8		0x140
+			>;
+		};
+
+		pinctrl_tpm_reset: tpmresetgrp {
+			fsl,pins = <
+				MX8MM_IOMUXC_SAI3_TXFS_GPIO4_IO31		0x19
 			>;
 		};
 
@@ -651,6 +656,8 @@
 	tpm@2e {
 		compatible = "st,st33ktpm2xi2c", "tcg,tpm-tis-i2c";
 		reg = <0x2e>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_tpm_reset>;
 		reset-gpios = <&gpio4 31 GPIO_ACTIVE_LOW>;
 		label = "tpm";
 	};
@@ -805,6 +812,7 @@
 	assigned-clocks = <&clk IMX8MM_CLK_SAI3>;
 	assigned-clock-parents = <&clk IMX8MM_AUDIO_PLL1_OUT>;
 	assigned-clock-rates = <1536000>;
+	fsl,sai-synchronous-rx;
 	status = "okay";
 };
 
